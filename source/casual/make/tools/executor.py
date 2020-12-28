@@ -124,7 +124,7 @@ def execute( command, show_command = True, show_output = True, env = None):
       if "CASUAL_MAKE_DRY_RUN" not in os.environ:
          reply = subprocess.run( command, stdout = output, bufsize = 1, env = env)
          if reply.returncode != 0:
-            sys.stderr.write(reply.stderr)
+            if reply.stderr: sys.stderr.write(reply.stderr)
             raise SystemError("command failed: " + ' '.join( command))
 
 
