@@ -20,6 +20,7 @@ def main():
    parser = argparse.ArgumentParser()
 
    parser.add_argument( "target", help="target to handle", nargs='?', default="link")
+
    parser.add_argument( "-d","--debug", help="compiling with debug flags", action="store_true")
    parser.add_argument( "--use-valgrind", help="use valgrind when compiling", action="store_true")
    parser.add_argument( "-a", "--analyze", help="build for analyzing", action="store_true")
