@@ -77,7 +77,7 @@ def main():
       os.environ["CASUAL_REPOSITORY_ROOT"] = normalized_path
 
       # Build the actual model from a file
-      print( executor.reformat( "building model: "), end='')
+      print( executor.reformat( "building model: "), end='', flush=True)
 
       model.build()
 
@@ -95,10 +95,9 @@ def main():
       total_handled = 0
       number_of_actions = 0
       if args.statistics:
-         statistics = None
          for level in actions:
             number_of_actions = number_of_actions + len( level)
-            statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
+         statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
          print("progress: " + statistics)
       
       with handler.Handler() as handler:

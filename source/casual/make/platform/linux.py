@@ -28,7 +28,6 @@ WARNING_DIRECTIVE = ["-Wall",
  "-Wsign-compare",
  "-Wuninitialized",
  "-Winit-self",
- "-Woverloaded-virtual",
  "-Wno-unused-parameter",
  "-Wno-missing-declarations",
  "-Wno-noexcept-type",
@@ -99,7 +98,7 @@ def library_directive(libraries):
 
 def local_library_path(paths = []):
 
-   return {'LD_LIBRARY_PATH' : re.sub( "\s", ":", os.getenv('CASUAL_OPTIONAL_LIBRARY_PATHS',''))}
+   return {'LD_LIBRARY_PATH' : './bin:' + os.getenv('LD_LIBRARY_PATH') + ":" + re.sub( "\s", ":", os.getenv('CASUAL_OPTIONAL_LIBRARY_PATHS',''))}
 
 def normalize_paths( paths):
    

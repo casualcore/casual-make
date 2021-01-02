@@ -148,7 +148,7 @@ def test( input):
       cmd += extra_arguments.split()
 
    env = selector.local_library_path(library_paths)
-   executor.execute_command( cmd, directory = context_directory, env = env)
+   executor.execute_command( cmd, directory = context_directory)
 
 
 def install( input):
