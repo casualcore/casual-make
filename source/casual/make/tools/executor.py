@@ -121,16 +121,17 @@ def execute( command, show_command = True, show_output = True, env = None):
          # append to global env
          env = dict( os.environ, **env)
 
+      
       if "CASUAL_MAKE_DRY_RUN" not in os.environ:
-         reply = subprocess.run( command, stdout = output, bufsize = 1, env = env)
-         if reply.returncode != 0:
-            if reply.stderr: sys.stderr.write(reply.stderr)
-            raise SystemError("command failed: " + ' '.join( command))
-
+         reply = subprocess.run( command, stdout = output, check = True, bufsize = 1, env = env)
 
    except KeyboardInterrupt:
       # todo: abort living subprocess here
       raise SystemError("\naborted due to ctrl-c\n")
+
+   except subprocess.CalledProcessError as ex:
+      if ex.stderr: sys.stderr.write(ex.stderr)
+      raise
 
 
 def execute_command( cmd, name = None, directory = None, show_command = True, show_output = True, env = None):

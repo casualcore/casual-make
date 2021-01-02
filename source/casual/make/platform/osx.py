@@ -12,11 +12,7 @@ import re
 ##
 ######################################################################
 
-
-if not os.getenv( "CXX"):
-   CXX = ["g++"]
-else:
-   CXX = os.getenv( "CXX").split()
+CXX = common.cxx()
 
 COMPILER = CXX
 
@@ -35,34 +31,20 @@ WARNING_DIRECTIVE = [
    "-Wno-implicit-fallthrough"
 ] 
 
-if not os.getenv( "OPTIONAL_FLAGS"):
-   OPTIONAL_FLAGS = []
-else:
-   OPTIONAL_FLAGS = os.getenv( "OPTIONAL_FLAGS").split()
+OPTIONAL_FLAGS = common.optional_flags()
 
 # Linkers
 LIBRARY_LINKER = CXX
+EXECUTABLE_LINKER = common.executable_linker()
 ARCHIVE_LINKER = ["ar", "rcs"]
 
 STD_DIRECTIVE = ["-std=c++17"]
 
 # lint stuff
-if not os.getenv( "LINT_COMMAND"):
-   LINT_COMMAND = ["clang-tidy"]
-else:
-   LINT_COMMAND = os.getenv( "LINT_COMMAND").split()
-
-if not os.getenv( "LINT_PRE_DIRECTIVES"):
-   LINT_PRE_DIRECTIVES = ["-quiet", "-config", "''", "--"]
-else:
-   LINT_PRE_DIRECTIVES = os.getenv( "LINT_PRE_DIRECTIVES").split()
+LINT_COMMAND = common.lint_command()
+LINT_PRE_DIRECTIVES = common.lint_pre_directives()
 
 OPTIONAL_POSSIBLE_FLAGS = ["-fcolor-diagnostics"]
-
-if not os.getenv( "EXECUTABLE_LINKER"):
-   EXECUTABLE_LINKER = ["g++"]
-else:
-   EXECUTABLE_LINKER = os.getenv( "EXECUTABLE_LINKER").split()
 
 # Compile and link directives
 #
@@ -124,7 +106,6 @@ def escape_space( paths):
 def normalize_paths( paths):
 
    return paths
-   
 
 def create_compile( source, destination, context_directory, paths, directive):
 

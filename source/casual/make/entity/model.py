@@ -2,8 +2,9 @@ import inspect
 import pprint
 import os
 import time
+import sys
 
-from casual.make.target import Target
+from casual.make.entity.target import Target
 from casual.make.tools.executor import importCode
 
 # globals
@@ -66,7 +67,11 @@ class Store( object):
 # instance of the global store
 store = Store()
 
+force_execution = False
+
 def register( name, filename = None, makefile = None):
+
+   if not name: raise SyntaxError( "Can't create target from None values")
    return store.register( name, filename, makefile)
 
 def get( name, filename = None, paths = None):
@@ -113,18 +118,12 @@ def make_absolute_path( paths, directory):
 
 def include_paths( makefile):
    value = get_value( makefile, 'include_paths')
-   if value:
-      return value
-   else:
-      return []
+   return value if value else []
 
 def library_paths( makefile):
    value = get_value( makefile, 'library_paths')
    directory, dummy = os.path.split( makefile)
-   if value:
-      return make_absolute_path( value, directory)
-   else:
-      return []
+   return make_absolute_path( value, directory) if value else []
 
 def construct_dependency_tree( target):
    """
@@ -132,19 +131,21 @@ def construct_dependency_tree( target):
    """
    if not isinstance( target, Target):
       target = store.get( target)
+
+   global force_execution
+   force_execution = True if os.getenv("CASUAL_FORCE_EXECUTION") else False
    
    return analyze_dependency_tree( target)
-
 
 def calculate_max_timestamp( target):
    """
    Retrive max timestamp
    """
-   if len( target.dependency) == 0:
-      return 0.0
+   if not target.dependency: return 0.0
+   if target.max: return target.max
 
-   return max( target.dependency, key=lambda item: item.timestamp).timestamp
-
+   target.max = max( target.dependency, key=lambda item: item.timestamp).timestamp
+   return target.max
 
 def analyze_dependency_tree( target):
    """
@@ -155,7 +156,9 @@ def analyze_dependency_tree( target):
    if target in store.analyze_cache():
       return store.analyze_cache()[target]
 
-   if not target.dependency or len(target.dependency) == 0:
+   if not target: raise SyntaxError('target is None')
+
+   if not target.dependency:
       store.analyze_cache()[target] = target.execute
       return target.execute
    else:
@@ -167,7 +170,7 @@ def analyze_dependency_tree( target):
 
          if current_target:
 
-            if action_required:
+            if action_required or force_execution:
 
                # The depedency steps is already evalutated to be run
                # So we need to run this one too.
@@ -212,9 +215,8 @@ def construct_action_list( target):
          stack.extend( target.dependency)
          while stack:
             next = stack.pop()
-            if next.execute and next.has_recipes():
-               return True
-            stack.extend( next.dependency)
+            if next.execute and next.has_recipes(): return True
+            if next.dependency: stack.extend( next.dependency)
          return False
 
       stack = [ ( 0, target)]
@@ -246,21 +248,19 @@ def construct_action_list( target):
       """
       normalizes the action list, returns unique actions 
       """
+
+      def action_exists( action, result):
+         for item in result:
+            hashed = [h.hash for h in item]
+            if action.hash in hashed: return True
+         return False
+
       result = []
-
       for level in reversed( levels):
-         def action_exists( action, result):
-            for level in result:
-               if action in level:
-                  return True
-            return False
-
          prospect = [ action for action in level if not action_exists( action, result)]
-         if prospect:
-            result.append( list( dict.fromkeys( prospect)))
+         if prospect: result.append( list( dict.fromkeys( prospect)))
 
       return result
-
 
    return normalize( flatten( target))
 
