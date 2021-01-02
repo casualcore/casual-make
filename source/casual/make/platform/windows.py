@@ -20,10 +20,7 @@ COMPILER = ['CL']
 
 WARNING_DIRECTIVE = ["-W3"]
 
-if not os.getenv( "OPTIONAL_FLAGS"):
-   OPTIONAL_FLAGS = []
-else:
-   OPTIONAL_FLAGS = os.getenv( "OPTIONAL_FLAGS").split()
+OPTIONAL_FLAGS = common.optional_flags()
 
 # Linkers
 LIBRARY_LINKER = ["LINK"]

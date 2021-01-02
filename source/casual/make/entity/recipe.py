@@ -6,7 +6,7 @@ import os
 import time
 import sys
 
-from casual.make.target import Target
+from casual.make.entity.target import Target
 import casual.make.tools.executor as executor
 
 
@@ -49,9 +49,10 @@ def create_includes( input):
    destination = input['destination']
    context_directory = os.path.dirname( input['destination'].makefile)
    include_paths = input['include_paths']
-   dependency_file = input['dependencyfile']
-
-   selector.create_includes( source, destination, context_directory, include_paths, dependency_file)
+   dependency_file = os.path.join( context_directory, input['dependencyfile'])
+   if not os.path.exists( dependency_file ) or \
+      ( os.path.exists( source.filename) and ( os.path.getmtime( source.filename) > os.path.getmtime( dependency_file) )):
+      selector.create_includes( source, destination, context_directory, include_paths, dependency_file)
 
 def compile( input):
    """
@@ -138,6 +139,8 @@ def link_unittest( input):
 
 def test( input):
    testfile = input['destination']
+   context_directory = os.path.dirname( input['destination'].makefile)
+
    library_paths = input['library_paths']
    cmd = [testfile.filename, "--gtest_color=yes"]
    extra_arguments = os.getenv("CASUAL_COMMANDLINE_EXTRA_ARGUMENTS")
@@ -145,7 +148,7 @@ def test( input):
       cmd += extra_arguments.split()
 
    env = selector.local_library_path(library_paths)
-   executor.execute_command( cmd, env = env)
+   executor.execute_command( cmd, directory = context_directory, env = env)
 
 
 def install( input):

@@ -12,6 +12,7 @@ class Target(object):
       self.need_serial_execution = False
       self.dependency = []
       self.recipes = []
+      self.max = None
 
       directory = ''
       if makefile:
@@ -37,13 +38,15 @@ class Target(object):
       else:
          self.timestamp = 0
 
+      self.hash = hash((self.name, self.filename, self.makefile))
+
    def __eq__(self, other): 
         if not isinstance(other, Target):
             # don't attempt to compare against unrelated types
             return NotImplemented
 
-        return self.name == other.name and self.filename == other.filename
-
+        return self.hash == other.hash
+        
    def __repr__(self):
       if self.name:
          return self.name
@@ -53,7 +56,7 @@ class Target(object):
          return self.name
 
    def __hash__(self):
-      return hash((self.name, self.filename, self.makefile))
+      return self.hash
 
    def add_dependency( self, target):
       if isinstance( target, list):
@@ -68,6 +71,6 @@ class Target(object):
          self.recipes.append( recipe)
 
    def has_recipes( self):
-      return len( self.recipes) > 0
+      return self.recipes
 
 

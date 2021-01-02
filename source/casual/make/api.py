@@ -1,9 +1,9 @@
 import inspect
 import os
 
-import casual.make.model as model
-import casual.make.recipe as recipe
-from casual.make.target import Target, Recipe
+import casual.make.entity.model as model
+import casual.make.entity.recipe as recipe
+from casual.make.entity.target import Target, Recipe
 from casual.make.tools.executor import importCode
 
 #
@@ -36,11 +36,7 @@ test_target.need_serial_execution = True
 clean_target = model.register( 'clean')
 # this operations should be done no matter what when referenced
 clean_target.execute = True
-clean_target.need_serial_execution = True
-
-dependency_target = model.register( 'dependency')
-dependency_target.execute = True
-dependency_target.need_serial_execution = False
+clean_target.need_serial_execution = False
 
 link_target.add_dependency( [link_library_target, link_archive_target, link_executable_target, link_unittest_target])
 
@@ -82,7 +78,6 @@ def normalize_library_target( libs, paths = None):
       reply.append( lib)
    return reply
 
-# Helpers
 def includes( dependency_file, makefile):
 
    context_directory, dummy = os.path.split(makefile)
@@ -118,17 +113,20 @@ def Compile( sourcefile, objectfile = None, directive = []):
 
    dependencyfile = compiler_handler_module.make_dependencyfilename( objectfile)
    dependencyfile_target = model.register(name=dependencyfile, filename=absolute_path( dependencyfile, makefile.filename), makefile = makefile.filename) 
-   dependencies = includes( dependencyfile_target.filename, makefile = makefile.filename)
-
+   object_dependencies = includes( dependencyfile_target.filename, makefile = makefile.filename)
    source_target = model.register(name=sourcefile, filename=absolute_path(sourcefile, makefile.filename), makefile = makefile.filename)
    
-   if len( dependencies) == 0:
-      # no dependency file - add at least source file
-      dependencies = [source_target]
-   
-   # add makefile to dependency
-   dependencies.append( makefile)
+   dependencyfile_target.add_dependency( source_target)
 
+   # no dependency file - add at least source file
+   if not object_dependencies: object_dependencies = [source_target]
+   
+   # add dependencyfile_target to dependency
+   object_dependencies.append( dependencyfile_target)
+   # add makefile to dependency
+   object_dependencies.append( makefile)
+
+   # register the objectfile in module
    object_target = model.register(name=objectfile, filename=absolute_path(objectfile, makefile.filename), makefile = makefile.filename)
    
    arguments = { 
@@ -141,16 +139,11 @@ def Compile( sourcefile, objectfile = None, directive = []):
 
    object_target.add_recipe( Recipe( recipe.create_includes, arguments))
    object_target.add_recipe( Recipe( recipe.compile, arguments))
-
-   object_target.add_dependency( dependencies)
+   object_target.add_dependency( object_dependencies)
 
    compile_target.add_dependency( object_target)
 
    clean_target.add_recipe( Recipe( recipe.clean, {'filename' : [ object_target, dependencyfile_target], 'makefile': makefile.filename}))
- 
-   dependencyfile_target.add_recipe( Recipe( recipe.create_includes, arguments))
-   dependencyfile_target.execute = True
-   dependency_target.add_dependency( dependencyfile_target)
 
    return object_target
 

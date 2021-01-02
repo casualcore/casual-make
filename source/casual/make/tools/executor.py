@@ -6,6 +6,7 @@ import re
 import sys
 import casual.make.tools.color as color_module
 
+if os.getenv('CASUAL_NO_COLORS'): color_module.color.active( False)
 
 def importCode(file, filename, name, add_to_sys_modules=0):
     """ code can be any object containing code -- string, file object, or
@@ -77,6 +78,8 @@ reformat.filters = [
      lambda match: color_module.color.blue( 'symlink: ') + color_module.color.white( match.group(2)) + ' --> ' + color_module.color.white( match.group(1)) + '\n' ],
     [ re.compile(r'^[^ ]*clang-tidy (.*?) (.*)'),  
      lambda match: color_module.color.green( 'lint: ') + color_module.color.white( match.group(1)) + '\n' ],
+    [ re.compile(r'^[^ ]*building model: '),  
+     lambda match: color_module.color.green( 'building model: ') ],
     
 ]
 
@@ -121,16 +124,17 @@ def execute( command, show_command = True, show_output = True, env = None):
          # append to global env
          env = dict( os.environ, **env)
 
+      
       if "CASUAL_MAKE_DRY_RUN" not in os.environ:
-         reply = subprocess.run( command, stdout = output, bufsize = 1, env = env)
-         if reply.returncode != 0:
-            if reply.stderr: sys.stderr.write(reply.stderr)
-            raise SystemError("command failed: " + ' '.join( command))
-
+         reply = subprocess.run( command, stdout = output, check = True, bufsize = 1, env = env)
 
    except KeyboardInterrupt:
       # todo: abort living subprocess here
       raise SystemError("\naborted due to ctrl-c\n")
+
+   except subprocess.CalledProcessError as ex:
+      if ex.stderr: sys.stderr.write(ex.stderr)
+      raise
 
 
 def execute_command( cmd, name = None, directory = None, show_command = True, show_output = True, env = None):

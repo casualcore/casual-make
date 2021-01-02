@@ -3,7 +3,7 @@ from queue import Empty
 
 import multiprocessing as mp
 import signal
-import casual.make.recipe as recipe
+import casual.make.entity.recipe as recipe
 import sys
 import os
 from time import sleep
@@ -32,8 +32,16 @@ def worker( input, output):
          try:
             recipe.dispatch( item)
             output.put( ( item, True))
-         except:
+         except SystemError as ex:
+            sys.stderr.write( '\nprocessed makefile: ' + str(item.makefile) + '\n')
+            sys.stderr.write( 'processed filename: ' + str(item.filename) + '\n')
+            sys.stderr.write( str(ex))
             output.put( ( item, False))
+         except PermissionError as ex:
+            sys.stderr.write( str(item) + '\n')
+            sys.stderr.write( str(ex) + '\n')
+            output.put( ( item, False))
+
    except Empty:
       pass
 
@@ -46,9 +54,14 @@ def terminate_children( process):
 def serial( actions):
    """
    Handle actions in serial
-   """   
+   """
    for item in actions:
-      recipe.dispatch( item)
+      try:
+         recipe.dispatch( item)
+      except SystemError as ex:
+         sys.stderr.write( '\nprocessed makefile: ' + str(item.makefile) + '\n')
+         sys.stderr.write( 'processed filename: ' + str(item.filename) + '\n')
+         raise
 
 class Handler:
    def __init__( self):
