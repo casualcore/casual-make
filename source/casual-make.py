@@ -90,7 +90,7 @@ def main():
 
       actions = model.construct_action_list( selected_target)
 
-      print("done")
+      print("done", flush = True)
 
       total_handled = 0
       number_of_actions = 0
@@ -98,7 +98,7 @@ def main():
          for level in actions:
             number_of_actions = number_of_actions + len( level)
          statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
-         print("progress: " + statistics)
+         print("progress: " + statistics, flush = True)
       
       with handler.Handler() as handler:
          for level in actions:
@@ -108,7 +108,7 @@ def main():
             if args.statistics:
                total_handled = total_handled + number_of_actions_in_level
                statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
-               print("progress: " + statistics)
+               print("progress: " + statistics, flush = True))
 
    except SystemError as exception:
       print( exception)

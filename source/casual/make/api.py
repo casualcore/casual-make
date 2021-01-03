@@ -43,7 +43,7 @@ link_target.add_dependency( [link_library_target, link_archive_target, link_exec
 install_target = model.register('install')
 # this operations should be done no matter what when referenced
 install_target.execute = True
-install_target.need_serial_execution = False
+install_target.need_serial_execution = True
 
 import importlib
 compiler_handler = os.getenv("CASUAL_COMPILER_HANDLER")
