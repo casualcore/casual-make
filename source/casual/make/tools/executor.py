@@ -111,9 +111,9 @@ def execute( command, show_command = True, show_output = True, env = None):
    try:
       if show_command:
          if "CASUAL_RAW_FORMAT" in os.environ:
-            sys.stdout.write( ' '.join( str(v) for v in command) + '\n')
+            print( ' '.join( str(v) for v in command), flush = True)
          else:
-            sys.stdout.write( reformat( ' '.join( str(v) for v in command)))
+            print( reformat( ' '.join( str(v) for v in command)), end = '', flush = True)
       
       output = sys.stdout
 
