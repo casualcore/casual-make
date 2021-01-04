@@ -62,7 +62,7 @@ if environment.get( "CASUAL_MAKE_DEBUG"):
    if environment.get( "CASUAL_MAKE_ANALYZE"):
       COMPILE_DIRECTIVES += ["-fprofile-arcs", "-ftest-coverage"]
       LINK_DIRECTIVES_LIB += ["-fprofile-arcs"]
-      LINK_DIRECTIVES_EXE += ["-lgcov -fprofile-arcs"]
+      LINK_DIRECTIVES_EXE += ["-lgcov", "-fprofile-arcs"]
 else:
    COMPILE_DIRECTIVES =  ["-c", "-O3", "-fPIC"] + WARNING_DIRECTIVE + STD_DIRECTIVE + ["-pthread"] + OPTIONAL_FLAGS
    LINK_DIRECTIVES_LIB = ["-dynamiclib", "-O3"] + GENERAL_LINK_DIRECTIVE + WARNING_DIRECTIVE + STD_DIRECTIVE
