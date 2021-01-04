@@ -9,7 +9,7 @@ def set( parameter, value = __DEFAULT()):
 def get( parameter, value = None):
    if parameter in os.environ:
       return os.environ[parameter]
-   elif value:
+   elif isinstance( value, str):
       return value
    else:
       None

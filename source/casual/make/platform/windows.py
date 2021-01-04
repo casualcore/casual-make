@@ -22,6 +22,9 @@ WARNING_DIRECTIVE = ["-W3"]
 
 OPTIONAL_FLAGS = common.optional_flags()
 
+VERSION_DIRECTIVE = common.casual_build_version()
+
+
 # Linkers
 LIBRARY_LINKER = ["LINK"]
 ARCHIVE_LINKER = ["LINK"]

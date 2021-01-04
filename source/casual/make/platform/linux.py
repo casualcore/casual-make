@@ -36,6 +36,8 @@ WARNING_DIRECTIVE = ["-Wall",
 
 OPTIONAL_FLAGS = common.optional_flags()
 
+VERSION_DIRECTIVE = common.casual_build_version()
+
 # Linkers
 LIBRARY_LINKER = CXX
 EXECUTABLE_LINKER = common.executable_linker()
@@ -51,7 +53,7 @@ LINT_PRE_DIRECTIVES = common.lint_pre_directives()
 # Compile and link directives
 #
 if environment.get( "CASUAL_MAKE_DEBUG"):
-   COMPILE_DIRECTIVES = ["-g", "-pthread", "-c", "-fpic",] + WARNING_DIRECTIVE + STD_DIRECTIVE
+   COMPILE_DIRECTIVES = ["-g", "-pthread", "-c", "-fpic",] + VERSION_DIRECTIVE + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_LIB = ["-g", "-pthread", "-shared", "-fpic"]
    LINK_DIRECTIVES_EXE = ["-g", "-pthread", "-fpic"]
    LINK_DIRECTIVES_ARCHIVE = ["-g"]  
@@ -61,7 +63,7 @@ if environment.get( "CASUAL_MAKE_DEBUG"):
       LINK_DIRECTIVES_LIB += ["-O0", "-coverage"]
       LINK_DIRECTIVES_EXE += ["-O0", "-coverage"]
 else:
-   COMPILE_DIRECTIVES = [ "-pthread", "-c", "-O3", "-fpic"] + WARNING_DIRECTIVE + STD_DIRECTIVE
+   COMPILE_DIRECTIVES = [ "-pthread", "-c", "-O3", "-fpic"] + VERSION_DIRECTIVE + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_LIB = [ "-pthread", "-shared", "-O3", "-fpic"] + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_EXE = [ "-pthread", "-O3", "-fpic"] + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_ARCHIVE = []

@@ -15,6 +15,9 @@ def add_item_to_list( items, item):
          new_list.append( item + i)
    return new_list
 
+def casual_build_version():
+   return ["-DCASUAL_BUILD_VERSION=\"" + environment.get("CASUAL_BUILD_VERSION", "") + "\""]
+
 def optional_flags():
    if not environment.get( "OPTIONAL_FLAGS"):
       return []
