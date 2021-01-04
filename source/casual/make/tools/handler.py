@@ -4,6 +4,8 @@ from queue import Empty
 import multiprocessing as mp
 import signal
 import casual.make.entity.recipe as recipe
+import casual.make.tools.environment as environment
+
 import sys
 import os
 from time import sleep
@@ -15,7 +17,7 @@ def need_serial_execution( action_list):
    """
    Find out if any item in list require serial handling
    """
-   if os.getenv("CASUAL_SERIAL_EXECUTION"):
+   if environment.get("CASUAL_MAKE_SERIAL_EXECUTION"):
       return True
       
    for item in action_list:

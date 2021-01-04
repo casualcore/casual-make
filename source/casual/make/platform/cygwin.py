@@ -1,13 +1,14 @@
 import os
 import casual.make.platform.common as common
 import casual.make.tools.executor as executor
+import casual.make.tools.environment as environment
 
 import sys
 import re
 
 def compose_paths( *args):
    paths=''
-   root_path = os.getenv("CASUAL_REPOSITORY_ROOT")
+   root_path = environment.get("CASUAL_REPOSITORY_ROOT")
    for arg in args:
       path = os.path.join(root_path,arg)
       paths += executor.execute_raw(['cygpath', path]) + ':'
@@ -69,13 +70,13 @@ OPTIONAL_POSSIBLE_FLAGS = ["-fcolor-diagnostics"]
 #
 # Compile and link directives
 #
-if os.getenv( "DEBUG"):
+if environment.get( "CASUAL_MAKE_DEBUG"):
    COMPILE_DIRECTIVES = ["-g", "-pthread", "-c", "-fpic"] + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_LIB = ["-g", "-pthread", "-shared", "-fpic"]
    LINK_DIRECTIVES_EXE = ["-g", "-pthread", "-fpic"]
    LINK_DIRECTIVES_ARCHIVE = ["-g"]  
 
-   if os.getenv( "ANALYZE"):
+   if environment.get( "CASUAL_MAKE_ANALYZE"):
       COMPILE_DIRECTIVES  += ["-O0", "-coverage"]
       LINK_DIRECTIVES_LIB += ["-O0", "-coverage"]
       LINK_DIRECTIVES_EXE += ["-O0", "-coverage"]
@@ -89,7 +90,7 @@ else:
 #
 # VALGRIND
 #
-if not os.getenv( "VALGRIND"):
+if not environment.get( "CASUAL_MAKE_VALGRIND"):
    PRE_UNITTEST_DIRECTIVE=["valgrind", "--xml=yes", "--xml-file=valgrind.xml"]
 
 
@@ -122,8 +123,8 @@ def library_directive(libraries):
 def local_library_path( paths = []):
    
    reply = {
-      'PATH' : os.getenv('PATH','') + ':' + \
-      re.sub( "\s", ":", os.getenv('CASUAL_OPTIONAL_LIBRARY_PATHS','')) + \
+      'PATH' : environment.get('PATH','') + ':' + \
+      re.sub( "\s", ":", environment.get('CASUAL_OPTIONAL_LIBRARY_PATHS','')) + \
          ':' + TOOLS_LIBRARY_PATHS
       }
 

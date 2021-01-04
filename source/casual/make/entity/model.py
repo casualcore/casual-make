@@ -6,6 +6,8 @@ import sys
 
 from casual.make.entity.target import Target
 from casual.make.tools.executor import importCode
+import casual.make.tools.environment as environment
+
 
 # globals
 class Store( object):
@@ -133,7 +135,7 @@ def construct_dependency_tree( target):
       target = store.get( target)
 
    global force_execution
-   force_execution = True if os.getenv("CASUAL_FORCE_EXECUTION") else False
+   force_execution = True if environment.get("CASUAL_MAKE_FORCE_EXECUTION") else False
    
    return analyze_dependency_tree( target)
 

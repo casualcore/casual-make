@@ -1,6 +1,7 @@
 import os
 import casual.make.platform.common as common
 import casual.make.tools.executor as executor
+import casual.make.tools.environment as environment
 
 import sys
 import re
@@ -52,13 +53,13 @@ OPTIONAL_POSSIBLE_FLAGS = ["-fcolor-diagnostics"]
 # how can we get emmidate binding like -Wl,-z,now ?
 GENERAL_LINK_DIRECTIVE = ["-fPIC"]
 
-if os.getenv( "DEBUG"):
+if environment.get( "CASUAL_MAKE_DEBUG"):
    COMPILE_DIRECTIVES = ["-ggdb", "-c", "-fPIC"] + WARNING_DIRECTIVE + STD_DIRECTIVE + OPTIONAL_FLAGS
    LINK_DIRECTIVES_LIB =  ["-ggdb", "-dynamiclib"] + WARNING_DIRECTIVE + GENERAL_LINK_DIRECTIVE
    LINK_DIRECTIVES_EXE =  ["-ggdb"] + WARNING_DIRECTIVE + GENERAL_LINK_DIRECTIVE
    LINK_DIRECTIVES_ARCHIVE =  ["-ggdb"] + WARNING_DIRECTIVE + GENERAL_LINK_DIRECTIVE
    
-   if os.getenv( "ANALYZE"):
+   if environment.get( "CASUAL_MAKE_ANALYZE"):
       COMPILE_DIRECTIVES += ["-fprofile-arcs", "-ftest-coverage"]
       LINK_DIRECTIVES_LIB += ["-fprofile-arcs"]
       LINK_DIRECTIVES_EXE += ["-lgcov -fprofile-arcs"]
@@ -72,7 +73,7 @@ else:
 #
 # VALGRIND
 #
-if not os.getenv( "VALGRIND"):
+if not environment.get( "CASUAL_MAKE_VALGRIND"):
    PRE_UNITTEST_DIRECTIVE=["valgrind", "--xml=yes", "--xml-file=valgrind.xml"]
 
 
@@ -97,7 +98,7 @@ def library_directive(libraries):
 
 def local_library_path(paths = []):
 
-   return {'LD_LIBRARY_PATH' : re.sub( "\s", ":", os.getenv('CASUAL_OPTIONAL_LIBRARY_PATHS',''))}
+   return {'LD_LIBRARY_PATH' : re.sub( "\s", ":", environment.get('CASUAL_OPTIONAL_LIBRARY_PATHS',''))}
 
 def escape_space( paths):
    

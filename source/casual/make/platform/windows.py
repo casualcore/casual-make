@@ -29,22 +29,22 @@ ARCHIVE_LINKER = ["LINK"]
 STD_DIRECTIVE = ["-std:c++14"]
 
 # lint stuff
-if not os.getenv( "LINT_COMMAND"):
+if not environment.get( "LINT_COMMAND"):
    LINT_COMMAND = ["clang-tidy"]
 else:
-   LINT_COMMAND = os.getenv( "LINT_COMMAND").split()
+   LINT_COMMAND = environment.get( "LINT_COMMAND").split()
 
 
-if not os.getenv( "LINT_PRE_DIRECTIVES"):
+if not environment.get( "LINT_PRE_DIRECTIVES"):
    LINT_PRE_DIRECTIVES = ["-quiet", "-config", "''", "--"]
 else:
-   LINT_PRE_DIRECTIVES = os.getenv( "LINT_PRE_DIRECTIVES").split()
+   LINT_PRE_DIRECTIVES = environment.get( "LINT_PRE_DIRECTIVES").split()
 
 
-if not os.getenv( "EXECUTABLE_LINKER"):
+if not environment.get( "EXECUTABLE_LINKER"):
    EXECUTABLE_LINKER = ["LINK"]
 else:
-   EXECUTABLE_LINKER = os.getenv( "EXECUTABLE_LINKER").split()
+   EXECUTABLE_LINKER = environment.get( "EXECUTABLE_LINKER").split()
 
 # Compile and link directives
 #
@@ -52,13 +52,13 @@ else:
 #
 # Compile and link directives
 #
-if os.getenv( "DEBUG"):
+if environment.get( "CASUAL_MAKE_DEBUG"):
    COMPILE_DIRECTIVES = ["-Zi", "-c", "-EHsc"] + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_LIB = ["-Zi", "-DLL"]
    LINK_DIRECTIVES_EXE = ["-Zi"]
    LINK_DIRECTIVES_ARCHIVE = ["-Zi"]  
 
-   if os.getenv( "ANALYZE"):
+   if environment.get( "CASUAL_MAKE_ANALYZE"):
       COMPILE_DIRECTIVES  += ["-O0", "-coverage"]
       LINK_DIRECTIVES_LIB += ["-O0", "-coverage"]
       LINK_DIRECTIVES_EXE += ["-O0", "-coverage"]
@@ -72,7 +72,7 @@ else:
 #
 # VALGRIND
 #
-if os.getenv( "VALGRIND"):
+if environment.get( "CASUAL_MAKE_VALGRIND"):
    PRE_UNITTEST_DIRECTIVE="valgrind --xml=yes --xml-file=valgrind.xml".split()
 
 

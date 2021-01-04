@@ -8,11 +8,11 @@ import sys
 
 from casual.make.entity.target import Target
 import casual.make.tools.executor as executor
-
+import casual.make.tools.environment as environment
 
 
 import importlib
-compiler_handler = os.getenv("CASUAL_COMPILER_HANDLER")
+compiler_handler = environment.get("CASUAL_MAKE_COMPILER_HANDLER")
 selector = importlib.import_module( compiler_handler)
 
 action_list={}
@@ -143,7 +143,7 @@ def test( input):
 
    library_paths = input['library_paths']
    cmd = [testfile.filename, "--gtest_color=yes"]
-   extra_arguments = os.getenv("CASUAL_COMMANDLINE_EXTRA_ARGUMENTS")
+   extra_arguments = environment.get("CASUAL_MAKE_COMMANDLINE_EXTRA_ARGUMENTS")
    if extra_arguments:
       cmd += extra_arguments.split()
 

@@ -3,12 +3,10 @@
 import sys
 import subprocess
 import os
-import time
 import platform
-
-import pprint
-
 import argparse
+
+import casual.make.tools.environment as environment
 
 def usage():
    print ( "usage: "+ sys.argv[0] + " target" )
@@ -41,26 +39,29 @@ def main():
 
    selected=args.target
 
-   if args.dry_run: os.environ["CASUAL_MAKE_DRY_RUN"] = "1"
-   if args.raw_format: os.environ["CASUAL_RAW_FORMAT"] = "1"
+   if args.dry_run: environment.set("CASUAL_MAKE_DRY_RUN")
+   if args.raw_format: environment.set("CASUAL_MAKE_RAW_FORMAT")
    # use your own compiler handler with this option
-   if args.compiler_handler: os.environ["CASUAL_COMPILER_HANDLER"] = args.compiler_handler
+   if args.compiler_handler: environment.set("CASUAL_MAKE_COMPILER_HANDLER", args.compiler_handler)
    # use built-in compiler handler which uses g++
    elif args.compiler == 'g++':
       if platform.system() == 'Darwin': module = "casual.make.platform.osx"
       elif platform.system() == 'Linux': module = "casual.make.platform.linux"
       elif platform.system().startswith('CYGWIN'): module = "casual.make.platform.cygwin"
       else: SystemError("Platform not supported")
-      os.environ["CASUAL_COMPILER_HANDLER"] = module
-   elif args.compiler == 'cl': os.environ["CASUAL_COMPILER_HANDLER"] = "casual.make.platform.windows"
+      environment.set("CASUAL_MAKE_COMPILER_HANDLER", module)
+   elif args.compiler == 'cl': environment.set("CASUAL_MAKE_COMPILER_HANDLER", "casual.make.platform.windows")
    else: raise SystemError("Compilerhandler not given or not supported")
 
-   if args.extra_args: os.environ["CASUAL_COMMANDLINE_EXTRA_ARGUMENTS"] = " ".join(args.extra_args)
+   if args.extra_args: environment.set("CASUAL_MAKE_COMMANDLINE_EXTRA_ARGUMENTS", " ".join(args.extra_args))
    if args.parallel: sys.stdout.write( "Deprecated option --parallel. This is default now. Use --serial instead to do opposite\n")
-   if args.serial: os.environ["CASUAL_SERIAL_EXECUTION"] = "1"
-   if args.force: os.environ["CASUAL_FORCE_EXECUTION"] = "1"
-   if args.no_colors: os.environ["CASUAL_NO_COLORS"] = "1"
-   if args.quiet: os.environ["CASUAL_QUIET"] = "1"
+   if args.serial: environment.set("CASUAL_MAKE_SERIAL_EXECUTION")
+   if args.force: environment.set("CASUAL_MAKE_FORCE_EXECUTION")
+   if args.no_colors: environment.set("CASUAL_MAKE_NO_COLORS")
+   if args.quiet: environment.set("CASUAL_MAKE_QUIET")
+   if args.debug: environment.set("CASUAL_MAKE_DEBUG")
+   if args.analyze: environment.set("CASUAL_MAKE_ANALYZE")
+   if args.use_valgrind: environment.set("CASUAL_MAKE_VALGRIND")
 
    try:
 
@@ -71,13 +72,13 @@ def main():
 
       # handle normalize path
       import importlib
-      compiler_handler = os.getenv("CASUAL_COMPILER_HANDLER")
+      compiler_handler = environment.get("CASUAL_MAKE_COMPILER_HANDLER")
       compiler_handler_module = importlib.import_module( compiler_handler)
 
       # setup environment
       gitpath = subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).rstrip()
       normalized_path = compiler_handler_module.normalize_paths( gitpath).decode()
-      os.environ["CASUAL_REPOSITORY_ROOT"] = normalized_path
+      environment.set("CASUAL_REPOSITORY_ROOT", normalized_path)
 
       # Build the actual model from a file
       print( executor.reformat( "building model: "), end='', flush=True)

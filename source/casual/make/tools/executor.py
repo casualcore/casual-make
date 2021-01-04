@@ -5,10 +5,12 @@ import errno
 import re
 import sys
 import casual.make.tools.color as color_module
+import casual.make.tools.environment as environment
+
 
 # globals
-if os.getenv('CASUAL_NO_COLORS'): color_module.color.active( False)
-quiet = True if os.getenv('CASUAL_QUIET') else False
+if environment.get('CASUAL_MAKE_NO_COLORS'): color_module.color.active( False)
+quiet = True if environment.get('CASUAL_MAKE_QUIET') else False
 
 def importCode(file, filename, name, add_to_sys_modules=0):
     """ code can be any object containing code -- string, file object, or
@@ -112,7 +114,7 @@ def execute( command, show_command = True, show_output = True, env = None):
 
    try:
       if show_command and not quiet:
-         if "CASUAL_RAW_FORMAT" in os.environ:
+         if "CASUAL_MAKE_RAW_FORMAT" in os.environ:
             print( ' '.join( str(v) for v in command), flush = True)
          else:
             print( reformat( ' '.join( str(v) for v in command)), end = '', flush = True)

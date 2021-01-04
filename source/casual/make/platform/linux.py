@@ -1,6 +1,7 @@
 import os
 import casual.make.platform.common as common
 import casual.make.tools.executor as executor
+import casual.make.tools.environment as environment
 
 import sys
 import re
@@ -49,13 +50,13 @@ LINT_PRE_DIRECTIVES = common.lint_pre_directives()
 #
 # Compile and link directives
 #
-if os.getenv( "DEBUG"):
+if environment.get( "CASUAL_MAKE_DEBUG"):
    COMPILE_DIRECTIVES = ["-g", "-pthread", "-c", "-fpic",] + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_LIB = ["-g", "-pthread", "-shared", "-fpic"]
    LINK_DIRECTIVES_EXE = ["-g", "-pthread", "-fpic"]
    LINK_DIRECTIVES_ARCHIVE = ["-g"]  
 
-   if os.getenv( "ANALYZE"):
+   if environment.get( "CASUAL_MAKE_ANALYZE"):
       COMPILE_DIRECTIVES  += ["-O0", "-coverage"]
       LINK_DIRECTIVES_LIB += ["-O0", "-coverage"]
       LINK_DIRECTIVES_EXE += ["-O0", "-coverage"]
@@ -69,7 +70,7 @@ else:
 #
 # VALGRIND
 #
-if os.getenv( "VALGRIND"):
+if environment.get( "CASUAL_MAKE_VALGRIND"):
    PRE_UNITTEST_DIRECTIVE="valgrind --xml=yes --xml-file=valgrind.xml".split()
 
 #
@@ -98,7 +99,7 @@ def library_directive(libraries):
 
 def local_library_path(paths = []):
 
-   return {'LD_LIBRARY_PATH' : './bin:' + os.getenv('LD_LIBRARY_PATH') + ":" + re.sub( "\s", ":", os.getenv('CASUAL_OPTIONAL_LIBRARY_PATHS',''))}
+   return {'LD_LIBRARY_PATH' : './bin:' + environment.get('LD_LIBRARY_PATH') + ":" + re.sub( "\s", ":", environment.get('CASUAL_OPTIONAL_LIBRARY_PATHS',''))}
 
 def normalize_paths( paths):
    

@@ -3,6 +3,8 @@ import os
 
 import casual.make.entity.model as model
 import casual.make.entity.recipe as recipe
+import casual.make.tools.environment as environment
+
 from casual.make.entity.target import Target, Recipe
 from casual.make.tools.executor import importCode
 
@@ -34,7 +36,7 @@ install_target.execute = True
 install_target.need_serial_execution = True
 
 import importlib
-compiler_handler = os.getenv("CASUAL_COMPILER_HANDLER")
+compiler_handler = environment.get("CASUAL_MAKE_COMPILER_HANDLER")
 compiler_handler_module = importlib.import_module( compiler_handler)
 
 #
