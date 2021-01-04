@@ -108,7 +108,7 @@ def main():
             if args.statistics:
                total_handled = total_handled + number_of_actions_in_level
                statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
-               print("progress: " + statistics, flush = True))
+               print("progress: " + statistics, flush = True)
 
    except SystemError as exception:
       print( exception)
