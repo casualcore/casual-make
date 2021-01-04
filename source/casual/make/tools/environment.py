@@ -6,8 +6,10 @@ def __DEFAULT():
 def set( parameter, value = __DEFAULT()):
    os.environ[parameter] = value
 
-def get( parameter):
+def get( parameter, value = None):
    if parameter in os.environ:
       return os.environ[parameter]
+   elif value:
+      return value
    else:
       None
