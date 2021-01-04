@@ -34,6 +34,7 @@ def main():
    parser.add_argument( "--statistics", help="printout some statistics", action="store_true", default=False)
    parser.add_argument( "--no-colors", help="no colors in printouts", action="store_true", default=False)
    parser.add_argument( "-i", "--ignore-errors", help="ignore compiler errors", action="store_true")
+   parser.add_argument( "--quiet", help="do not printout command logging", action="store_true")
 
    parser.add_argument( "extra_args", help="argument passed to action", nargs=argparse.REMAINDER)
    args = parser.parse_args()
@@ -59,6 +60,8 @@ def main():
    if args.serial: os.environ["CASUAL_SERIAL_EXECUTION"] = "1"
    if args.force: os.environ["CASUAL_FORCE_EXECUTION"] = "1"
    if args.no_colors: os.environ["CASUAL_NO_COLORS"] = "1"
+   if args.quiet: os.environ["CASUAL_QUIET"] = "1"
+
    try:
 
       # Need to import this after argparse

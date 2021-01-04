@@ -6,7 +6,9 @@ import re
 import sys
 import casual.make.tools.color as color_module
 
+# globals
 if os.getenv('CASUAL_NO_COLORS'): color_module.color.active( False)
+quiet = True if os.getenv('CASUAL_QUIET') else False
 
 def importCode(file, filename, name, add_to_sys_modules=0):
     """ code can be any object containing code -- string, file object, or
@@ -109,7 +111,7 @@ def execute_raw(command):
 def execute( command, show_command = True, show_output = True, env = None):
 
    try:
-      if show_command:
+      if show_command and not quiet:
          if "CASUAL_RAW_FORMAT" in os.environ:
             print( ' '.join( str(v) for v in command), flush = True)
          else:
@@ -133,7 +135,8 @@ def execute( command, show_command = True, show_output = True, env = None):
       raise SystemError("\naborted due to ctrl-c\n")
 
    except subprocess.CalledProcessError as ex:
-      if ex.stderr: sys.stderr.write(ex.stderr)
+      print( 'processed command: ', ' '.join( str(v) for v in command), flush = True, end='', file = sys.stderr)
+      if ex.stderr: print(ex.stderr, file = sys.stderr)
       raise
 
 
