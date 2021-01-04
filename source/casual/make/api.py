@@ -10,23 +10,11 @@ from casual.make.tools.executor import importCode
 # global setup for operations
 #
 compile_target = model.register( 'compile')
-compile_target.need_serial_execution = False
-
 link_target = model.register( 'link')
-link_target.need_serial_execution = False
-
 link_library_target = model.register( 'link-library')
-link_library_target.need_serial_execution = False
-
 link_archive_target = model.register( 'link-archive')
-link_archive_target.need_serial_execution = False
-
 link_executable_target = model.register( 'link-executable')
-link_executable_target.need_serial_execution = False
-
 link_unittest_target = model.register( 'link-unittest')
-link_unittest_target.need_serial_execution = False
-
 
 test_target = model.register('test')
 # this operations should be done no matter what when referenced
@@ -289,7 +277,7 @@ def Install( source, path):
             dependency_target = model.register( item[0], filename, makefile = makefile.filename)
          install_file_target.add_dependency( dependency_target)
          install_file_target.execute = True
-         install_file_target.need_serial_execution = False
+         install_file_target.need_serial_execution = True
          arguments = {
             'source' : dependency_target.filename, 
             'path' : path + '/' + item[1]
@@ -301,6 +289,7 @@ def Install( source, path):
          dependency_target = item
          install_file_target.add_dependency( dependency_target)
          install_file_target.execute = True
+         install_file_target.need_serial_execution = True
          arguments = {
             'source' : dependency_target.filename, 
             'path' : path
@@ -315,6 +304,7 @@ def Install( source, path):
             dependency_target = model.register( item, filename, makefile = makefile.filename)
          install_file_target.add_dependency( dependency_target)
          install_file_target.execute = True
+         install_file_target.need_serial_execution = True
          arguments = {
             'source' : dependency_target.filename, 
             'path' : path 
