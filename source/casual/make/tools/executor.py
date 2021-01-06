@@ -65,7 +65,9 @@ def execute( command, show_command = True, show_output = True, env = None):
          else:
             output.print( ' '.join( str(v) for v in command), end = '') 
       
-      out = subprocess.PIPE if show_output else open( os.devnull, 'w')
+      out = None if show_output else subprocess.DEVNULL
+
+      err = subprocess.PIPE
 
       if env:
          # append to global env
@@ -73,8 +75,8 @@ def execute( command, show_command = True, show_output = True, env = None):
 
       
       if "CASUAL_MAKE_DRY_RUN" not in os.environ:
-         reply = subprocess.run( command, stdout = out, stderr = subprocess.PIPE, check = True, bufsize = 1, env = env)
-
+         reply = subprocess.run( command, stdout = out, stderr = err, check = True, bufsize = 1, env = env)
+   
    except KeyboardInterrupt:
       # todo: abort living subprocess here
       raise SystemError("\naborted due to ctrl-c\n")
