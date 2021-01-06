@@ -47,7 +47,7 @@ STD_DIRECTIVE = ["-std=c++17"]
 LINT_COMMAND = common.lint_command()
 LINT_PRE_DIRECTIVES = common.lint_pre_directives()
 
-OPTIONAL_POSSIBLE_FLAGS = ["-fcolor-diagnostics"]
+OPTIONAL_POSSIBLE_FLAGS = ["-fdiagnostics-color=always"]
 
 # Compile and link directives
 #
@@ -66,7 +66,7 @@ if environment.get( "CASUAL_MAKE_DEBUG"):
       LINK_DIRECTIVES_LIB += ["-fprofile-arcs"]
       LINK_DIRECTIVES_EXE += ["-lgcov", "-fprofile-arcs"]
 else:
-   COMPILE_DIRECTIVES =  ["-c", "-O3", "-fPIC"] + VERSION_DIRECTIVE + WARNING_DIRECTIVE + STD_DIRECTIVE + ["-pthread"] + OPTIONAL_FLAGS
+   COMPILE_DIRECTIVES =  ["-c", "-O3", "-fPIC"] + VERSION_DIRECTIVE + WARNING_DIRECTIVE + STD_DIRECTIVE + ["-pthread"] + OPTIONAL_FLAGS + OPTIONAL_POSSIBLE_FLAGS
    LINK_DIRECTIVES_LIB = ["-dynamiclib", "-O3"] + GENERAL_LINK_DIRECTIVE + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_EXE = ["-O3"] + GENERAL_LINK_DIRECTIVE + WARNING_DIRECTIVE + STD_DIRECTIVE
    LINK_DIRECTIVES_ARCHIVE = ["-O3"] + GENERAL_LINK_DIRECTIVE + WARNING_DIRECTIVE + STD_DIRECTIVE + ["-pthread"]

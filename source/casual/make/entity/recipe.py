@@ -9,6 +9,7 @@ import sys
 from casual.make.entity.target import Target
 import casual.make.tools.executor as executor
 import casual.make.tools.environment as environment
+import casual.make.tools.output as output
 
 
 import importlib
@@ -171,9 +172,9 @@ def install( input):
          (filename, copied) = distutils.file_util.copy_file( source, path, update=1, verbose=0)
 
       if copied:
-         sys.stdout.write( executor.reformat('copy ' + source + ' ' + filename))
+         sys.stdout.write( output.reformat('copy ' + source + ' ' + filename))
    else:
-      sys.stdout.write( executor.reformat('copy ' + source + ' ' + path))
+      sys.stdout.write( output.reformat('copy ' + source + ' ' + path))
 
 
 def clean( input):
@@ -184,12 +185,12 @@ def clean( input):
       if isinstance( file, Target):
          filename = file.filename
          if os.path.exists( filename):
-            sys.stdout.write( executor.reformat( "rm -f " + filename))
+            sys.stdout.write( output.reformat( "rm -f " + filename))
             if "CASUAL_MAKE_DRY_RUN" not in os.environ:
                os.remove( filename)
       elif isinstance( file, str):
          if os.path.exists( file):
-            sys.stdout.write( executor.reformat( "rm -f " + file))
+            sys.stdout.write( output.reformat( "rm -f " + file))
             if "CASUAL_MAKE_DRY_RUN" not in os.environ:
                os.remove( file)
       else:
@@ -199,7 +200,7 @@ def clean( input):
             else:
                filename = f.filename
             if os.path.exists( filename):
-               sys.stdout.write( executor.reformat( "rm -f " + filename))
+               sys.stdout.write( output.reformat( "rm -f " + filename))
                if "CASUAL_MAKE_DRY_RUN" not in os.environ:
                   os.remove( filename)
 

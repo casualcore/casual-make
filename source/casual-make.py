@@ -33,9 +33,17 @@ def main():
    parser.add_argument( "--no-colors", help="no colors in printouts", action="store_true", default=False)
    parser.add_argument( "-i", "--ignore-errors", help="ignore compiler errors", action="store_true")
    parser.add_argument( "--quiet", help="do not printout command logging", action="store_true")
+   parser.add_argument( "-v", "--verbose", help="print some verbose output", action="store_true")
+   parser.add_argument( "--version", help="print version number", action="store_true")
+
 
    parser.add_argument( "extra_args", help="argument passed to action", nargs=argparse.REMAINDER)
    args = parser.parse_args()
+
+   if args.version:
+      import casual
+      print (casual.__version__)
+      raise SystemExit(0)
 
    selected=args.target
 
@@ -62,6 +70,9 @@ def main():
    if args.debug: environment.set("CASUAL_MAKE_DEBUG")
    if args.analyze: environment.set("CASUAL_MAKE_ANALYZE")
    if args.use_valgrind: environment.set("CASUAL_MAKE_VALGRIND")
+   if args.ignore_errors: environment.set("CASUAL_MAKE_IGNORE_ERROR")
+   if args.verbose: environment.set("CASUAL_MAKE_VERBOSE")
+
 
    try:
 
@@ -69,6 +80,7 @@ def main():
       import casual.make.entity.model as model
       import casual.make.tools.handler as handler
       import casual.make.tools.executor as executor
+      import casual.make.tools.output as output
 
       # handle normalize path
       import importlib
@@ -81,7 +93,7 @@ def main():
       environment.set("CASUAL_REPOSITORY_ROOT", normalized_path)
 
       # Build the actual model from a file
-      print( executor.reformat( "building model: "), end='', flush=True)
+      output.print( "building model: ", end='')
 
       model.build()
 
@@ -94,7 +106,7 @@ def main():
 
       actions = model.construct_action_list( selected_target)
 
-      print("done", flush = True)
+      output.print("done")
 
       total_handled = 0
       number_of_actions = 0
@@ -102,7 +114,7 @@ def main():
          for level in actions:
             number_of_actions = number_of_actions + len( level)
          statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
-         print("progress: " + statistics, flush = True)
+         output.print("progress: " + statistics)
       
       with handler.Handler() as handler:
          for level in actions:
@@ -112,7 +124,7 @@ def main():
             if args.statistics:
                total_handled = total_handled + number_of_actions_in_level
                statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
-               print("progress: " + statistics, flush = True)
+               output.print("progress: " + statistics)
 
    except SystemError as exception:
       print( exception)

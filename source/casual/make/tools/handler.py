@@ -5,13 +5,14 @@ import multiprocessing as mp
 import signal
 import casual.make.entity.recipe as recipe
 import casual.make.tools.environment as environment
-
+import casual.make.tools.output as out
 import sys
 import os
 from time import sleep
 
-
-   
+# globals
+ignore_error = True if environment.get("CASUAL_MAKE_IGNORE_ERROR") else False  
+verbose = True if environment.get("CASUAL_MAKE_VERBOSE") else False  
 
 def need_serial_execution( action_list):
    """
@@ -35,13 +36,13 @@ def worker( input, output):
             recipe.dispatch( item)
             output.put( ( item, True))
          except SystemError as ex:
-            sys.stderr.write( '\nprocessed makefile: ' + str(item.makefile) + '\n')
-            sys.stderr.write( 'processed filename: ' + str(item.filename) + '\n')
-            sys.stderr.write( str(ex))
+            if verbose: out.error( '\nprocessed makefile: ' + str(item.makefile))
+            if verbose: out.error( 'processed filename: ' + str(item.filename))
+            if not ignore_error: out.error( str(ex))
             output.put( ( item, False))
          except PermissionError as ex:
-            sys.stderr.write( str(item) + '\n')
-            sys.stderr.write( str(ex) + '\n')
+            out.error( str(item))
+            out.error( ex)
             output.put( ( item, False))
 
    except Empty:
@@ -61,9 +62,9 @@ def serial( actions):
       try:
          recipe.dispatch( item)
       except SystemError as ex:
-         sys.stderr.write( '\nprocessed makefile: ' + str(item.makefile) + '\n')
-         sys.stderr.write( 'processed filename: ' + str(item.filename) + '\n')
-         raise
+         if verbose: out.error( '\nprocessed makefile: ' + str(item.makefile))
+         if verbose: out.error( 'processed filename: ' + str(item.filename))
+         if not ignore_error: raise
 
 class Handler:
    def __init__( self):
@@ -97,7 +98,7 @@ class Handler:
          while actions:
             (action, ok) = self.reply_queue.get( True)
             actions.remove( action)
-            if not ok:
+            if not ok and not ignore_error:
                raise SystemError("error building...")
 
       except KeyboardInterrupt:

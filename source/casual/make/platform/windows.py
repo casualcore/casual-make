@@ -111,7 +111,6 @@ def create_dependency_file( data, filename, source, destination, directory):
    output = cStringIO.StringIO()
    output.write(destination + ': \\\n')
    output.write(source + '  \\\n')
-   print filename
    for line in data.split('\n'):
       if 'fatal error' in line:
          raise SystemError(line)
