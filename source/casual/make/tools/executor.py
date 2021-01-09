@@ -87,7 +87,7 @@ def execute( command, show_command = True, show_output = True, env = None):
       raise SystemError( "aborting due to errors")
 
 
-def execute_command( cmd, name = None, directory = None, show_command = True, show_output = True, env = None):
+def command( cmd, name = None, directory = None, show_command = True, show_output = True, env = None):
 
    if directory:
       with cd(directory):

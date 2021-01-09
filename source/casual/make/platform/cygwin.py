@@ -156,12 +156,12 @@ def normalize_paths( paths):
 def create_compile( source, destination, context_directory, paths, directive):
    
    cmd = COMPILER + COMPILE_DIRECTIVES + directive + ['-o', destination.filename, source.filename] + common.add_item_to_list( escape_space( paths), '-I')
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
 
 def create_includes(source, destination, context_directory, paths, dependency_file):
    
    cmd = HEADER_DEPENDENCY_COMMAND + [source.filename] + common.add_item_to_list( escape_space( paths), '-I') + ['-MF',dependency_file] 
-   executor.execute_command( cmd, destination, context_directory, show_command=True, show_output=False)
+   executor.command( cmd, destination, context_directory, show_command=True, show_output=False)
 
 def create_link_library(destination, context_directory, objects, library_paths, libraries):
 
@@ -179,17 +179,17 @@ def create_link_library(destination, context_directory, objects, library_paths, 
       objects + \
       library_paths_directive( escape_space( library_paths)) + \
       common.add_item_to_list( libraries, '-l')
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
 
 def create_link_executable(destination, context_directory, objects, library_paths, libraries):
    
    cmd = EXECUTABLE_LINKER + LINK_DIRECTIVES_EXE + ['-o', destination.filename] + objects + library_paths_directive( escape_space( library_paths)) + common.add_item_to_list( libraries, '-l')
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
 
 def create_link_archive(destination, context_directory, objects):
 
    cmd = ARCHIVE_LINKER + [destination.filename] + objects
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
 
 def make_objectname( source):
    

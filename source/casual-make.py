@@ -8,13 +8,10 @@ import argparse
 
 import casual.make.tools.environment as environment
 
-def usage():
-   print ( "usage: "+ sys.argv[0] + " target" )
-   raise SystemExit
-
-
-def main():
-
+def handle_arguments():
+   """
+   parsing application arguments
+   """
    parser = argparse.ArgumentParser()
 
    parser.add_argument( "target", help="target to handle", nargs='?', default="link")
@@ -36,23 +33,22 @@ def main():
    parser.add_argument( "-v", "--verbose", help="print some verbose output", action="store_true")
    parser.add_argument( "--version", help="print version number", action="store_true")
 
-
    parser.add_argument( "extra_args", help="argument passed to action", nargs=argparse.REMAINDER)
    args = parser.parse_args()
 
-   if args.version:
-      import casual
-      print (casual.__version__)
-      raise SystemExit(0)
+   return args
 
-   selected=args.target
-
+def set_environment( args):
+   """
+   update environment to manage application flow
+   """
    if args.dry_run: environment.set("CASUAL_MAKE_DRY_RUN")
    if args.raw_format: environment.set("CASUAL_MAKE_RAW_FORMAT")
    # use your own compiler handler with this option
    if args.compiler_handler: environment.set("CASUAL_MAKE_COMPILER_HANDLER", args.compiler_handler)
    # use built-in compiler handler which uses g++
    elif args.compiler == 'g++':
+      module = None
       if platform.system() == 'Darwin': module = "casual.make.platform.osx"
       elif platform.system() == 'Linux': module = "casual.make.platform.linux"
       elif platform.system().startswith('CYGWIN'): module = "casual.make.platform.cygwin"
@@ -73,6 +69,19 @@ def main():
    if args.ignore_errors: environment.set("CASUAL_MAKE_IGNORE_ERROR")
    if args.verbose: environment.set("CASUAL_MAKE_VERBOSE")
 
+def main():
+
+   args = handle_arguments()
+
+   # handle simples action first
+   if args.version:
+      import casual
+      print (casual.__version__)
+      raise SystemExit(0)
+
+   set_environment( args)
+
+   selected=args.target
 
    try:
 
@@ -82,28 +91,18 @@ def main():
       import casual.make.tools.executor as executor
       import casual.make.tools.output as output
 
-      # handle normalize path
-      import importlib
-      compiler_handler = environment.get("CASUAL_MAKE_COMPILER_HANDLER")
-      compiler_handler_module = importlib.import_module( compiler_handler)
-
-      # setup environment
-      gitpath = subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).rstrip()
-      normalized_path = compiler_handler_module.normalize_paths( gitpath).decode()
-      environment.set("CASUAL_REPOSITORY_ROOT", normalized_path)
-
       # Build the actual model from a file
       output.print( "building model: ", end='')
-
       model.build()
 
       selected_target = model.get( selected)
       
-      if not selected_target:
-         raise SystemError( selected + " not known")
+      if not selected_target: raise SystemError( selected + " not known")
 
+      # construct the dependency tree
       model.construct_dependency_tree( selected_target)
 
+      # retreive the current action list
       actions = model.construct_action_list( selected_target)
 
       output.print("done")
@@ -116,6 +115,7 @@ def main():
          statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
          output.print("progress: " + statistics)
       
+      # start handling actions
       with handler.Handler() as handler:
          for level in actions:
             # All actions within a 'level' can be done in parallel

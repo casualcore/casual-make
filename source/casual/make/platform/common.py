@@ -16,34 +16,29 @@ def add_item_to_list( items, item):
    return new_list
 
 def casual_build_version():
+   
    return ["-DCASUAL_BUILD_VERSION=\"" + environment.get("CASUAL_BUILD_VERSION", "") + "\""]
 
 def optional_flags():
-   if not environment.get( "OPTIONAL_FLAGS"):
-      return []
-   else:
-      return environment.get( "OPTIONAL_FLAGS").split()
+
+   return environment.get( "OPTIONAL_FLAGS", "").split()
 
 def cxx():
-   if not environment.get( "CXX"):
-      return ["g++"]
-   else:
-      return environment.get( "CXX").split()
 
+   return ["g++"] if not environment.get( "CXX") \
+      else environment.get( "CXX").split()
+ 
 def lint_command():
-   if not environment.get( "LINT_COMMAND"):
-      return ["clang-tidy"]
-   else:
-      return environment.get( "LINT_COMMAND").split()
+   
+   return ["clang-tidy"] if not environment.get( "LINT_COMMAND") \
+      else environment.get( "LINT_COMMAND").split()
 
 def lint_pre_directives():
-   if not environment.get( "LINT_PRE_DIRECTIVES"):
-      return ["-quiet", "-config", "''", "--"]
-   else:
-      return environment.get( "LINT_PRE_DIRECTIVES").split()
+   
+   return ["-quiet", "-config", "''", "--"] if not environment.get( "LINT_PRE_DIRECTIVES") \
+      else environment.get( "LINT_PRE_DIRECTIVES").split()
 
 def executable_linker():
-   if not environment.get( "EXECUTABLE_LINKER"):
-      return cxx()
-   else:
-      return environment.get( "EXECUTABLE_LINKER").split()
+   
+   return cxx() if not environment.get( "EXECUTABLE_LINKER") \
+      else environment.get( "EXECUTABLE_LINKER").split()

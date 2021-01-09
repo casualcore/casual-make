@@ -2,13 +2,11 @@ from multiprocessing import Queue, Process
 from queue import Empty
 
 import multiprocessing as mp
-import signal
 import casual.make.entity.recipe as recipe
 import casual.make.tools.environment as environment
 import casual.make.tools.output as out
 import sys
 import os
-from time import sleep
 
 # globals
 ignore_error = True if environment.get("CASUAL_MAKE_IGNORE_ERROR") else False  

@@ -144,30 +144,30 @@ def library_directive(libraries):
 def create_compile( source, destination, context_directory, paths, directive):
    
    cmd = COMPILER + COMPILE_DIRECTIVES + directive + ['-Fo:' + destination.filename, source.filename] + common.add_item_to_list( paths, '-I') + NOLOGO
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
 
 def create_includes(source, destination, context_directory, paths, dependency_file):
    
    cmd = HEADER_DEPENDENCY_COMMAND + [source.filename] + common.add_item_to_list( paths, '-I') + NOLOGO
-   dependency_data = executor.execute_command( cmd, destination, context_directory, show_command=True, show_output=True)
+   dependency_data = executor.command( cmd, destination, context_directory, show_command=True, show_output=True)
    create_dependency_file(dependency_data, dependency_file, source.filename, destination.filename, context_directory)
 
 def create_link_library(destination, context_directory, objects, library_paths, libraries):
 
    cmd = ["LIB"] + ['-out:' + destination.filename] + objects + library_paths_directive( library_paths)  + append_suffix_in_list( libraries, '.lib') + NOLOGO
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
    cmd = LIBRARY_LINKER + LINK_DIRECTIVES_LIB + ['-out:' + destination.filename.replace(".lib",".dll")] + objects + library_paths_directive( library_paths)  + append_suffix_in_list( libraries, '.lib') + NOLOGO
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
 
 def create_link_executable(destination, context_directory, objects, library_paths, libraries):
    
    cmd = EXECUTABLE_LINKER + LINK_DIRECTIVES_EXE + ['-out:' + destination.filename] + objects + library_paths_directive( library_paths) + append_suffix_in_list( libraries, '.lib') + NOLOGO
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
 
 def create_link_archive(destination, context_directory, objects):
 
    cmd = ARCHIVE_LINKER + LINK_DIRECTIVES_LIB + ['-out:' + destination.filename] + objects + NOLOGO
-   executor.execute_command( cmd, destination, context_directory)
+   executor.command( cmd, destination, context_directory)
 
 def make_objectname( source):
    

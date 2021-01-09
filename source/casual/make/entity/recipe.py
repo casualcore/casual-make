@@ -149,7 +149,7 @@ def test( input):
       cmd += extra_arguments.split()
 
    env = selector.local_library_path(library_paths)
-   executor.execute_command( cmd, directory = context_directory)
+   executor.command( cmd, directory = context_directory)
 
 
 def install( input):
@@ -186,12 +186,12 @@ def clean( input):
          filename = file.filename
          if os.path.exists( filename):
             sys.stdout.write( output.reformat( "rm -f " + filename))
-            if "CASUAL_MAKE_DRY_RUN" not in os.environ:
+            if not environment.get("CASUAL_MAKE_DRY_RUN"):
                os.remove( filename)
       elif isinstance( file, str):
          if os.path.exists( file):
             sys.stdout.write( output.reformat( "rm -f " + file))
-            if "CASUAL_MAKE_DRY_RUN" not in os.environ:
+            if not environment.get("CASUAL_MAKE_DRY_RUN"):
                os.remove( file)
       else:
          for f in file:
@@ -201,7 +201,7 @@ def clean( input):
                filename = f.filename
             if os.path.exists( filename):
                sys.stdout.write( output.reformat( "rm -f " + filename))
-               if "CASUAL_MAKE_DRY_RUN" not in os.environ:
+               if not environment.get("CASUAL_MAKE_DRY_RUN"):
                   os.remove( filename)
 
 def dispatch( target):
