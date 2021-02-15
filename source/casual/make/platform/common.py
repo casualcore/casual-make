@@ -1,3 +1,5 @@
+import platform
+
 import casual.make.entity.target as target
 import casual.make.tools.environment as environment
 
@@ -15,9 +17,25 @@ def add_item_to_list( items, item):
          new_list.append( item + i)
    return new_list
 
+def verify_type( name):
+   if not isinstance( name, str):
+      raise SystemError("Can't call this method with " + str( type( name)))
+
+def assemble_path( sub_directory, name, main_directory = None, prefix = "", suffix = ""):
+
+   if main_directory:
+      assembled = os.path.join( main_directory, sub_directory, prefix + name + suffix)
+   else:
+      assembled = os.path.join( sub_directory, prefix + name + suffix)
+
+   return assembled
+
+
 def casual_build_version():
-   
-   return ["-DCASUAL_BUILD_VERSION=\"" + environment.get("CASUAL_BUILD_VERSION", "") + "\""]
+   if environment.get("CASUAL_BUILD_VERSION"):
+      return ["-DCASUAL_BUILD_VERSION=\"" + environment.get("CASUAL_BUILD_VERSION") + "\""]
+   else:
+      return []
 
 def optional_flags():
 
@@ -42,3 +60,19 @@ def executable_linker():
    
    return cxx() if not environment.get( "EXECUTABLE_LINKER") \
       else environment.get( "EXECUTABLE_LINKER").split()
+
+
+def archive_linker():
+   return ["ar", "rcs"]
+
+def cpp_standard():
+   if platform.system().startswith('CYGWIN'):
+      return ["-std=gnu++17"]
+   else:
+      return ["-std=c++17"]
+
+def optional_possible_flags():
+   return ["-fdiagnostics-color=always"]
+
+
+

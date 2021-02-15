@@ -69,6 +69,9 @@ def set_environment( args):
    if args.ignore_errors: environment.set("CASUAL_MAKE_IGNORE_ERROR")
    if args.verbose: environment.set("CASUAL_MAKE_VERBOSE")
 
+   if not environment.get("CASUAL_MAKE_SOURCE_ROOT"):
+      environment.set("CASUAL_MAKE_SOURCE_ROOT", os.getcwd())
+
 def main():
 
    args = handle_arguments()
