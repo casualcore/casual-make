@@ -23,7 +23,6 @@ def handle_arguments():
    parser.add_argument( "-r","--raw-format", help="echo command in raw format", action="store_true")
    parser.add_argument( "-c","--compiler", help="choose compiler", default="g++")
    parser.add_argument( "--compiler-handler", help="choose compiler module directly", default=None)
-   parser.add_argument( "-p", "--parallel", help="compile in a parallel maner. This is default now. Will be removed", required=False, action="store_true")
    parser.add_argument( "-s", "--serial", help="compile in a serial maner", action="store_true", default=False)
    parser.add_argument( "-f", "--force", help="force action to execute", action="store_true", default=False)
    parser.add_argument( "--statistics", help="printout some statistics", action="store_true", default=False)
@@ -58,7 +57,6 @@ def set_environment( args):
    else: raise SystemError("Compilerhandler not given or not supported")
 
    if args.extra_args: environment.set("CASUAL_MAKE_COMMANDLINE_EXTRA_ARGUMENTS", " ".join(args.extra_args))
-   if args.parallel: sys.stdout.write( "Deprecated option --parallel. This is default now. Use --serial instead to do opposite\n")
    if args.serial: environment.set("CASUAL_MAKE_SERIAL_EXECUTION")
    if args.force: environment.set("CASUAL_MAKE_FORCE_EXECUTION")
    if args.no_colors: environment.set("CASUAL_MAKE_NO_COLORS")

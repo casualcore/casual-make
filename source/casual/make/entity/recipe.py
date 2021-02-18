@@ -152,7 +152,7 @@ def test( input):
    executor.command( cmd, directory = context_directory)
 
 
-def install( input):
+def install( dict: input):
    source = input['source']
    if isinstance( source, str):
       pass

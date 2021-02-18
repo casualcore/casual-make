@@ -5,6 +5,7 @@ import casual.make.compiler.gcc as gcc
 import os
 import json
 import sys
+import platform
 
 
 
@@ -26,10 +27,12 @@ def build_configuration():
          with open(build_configuration_path, "r") as file:
             stored_configuration = json.load(file)
 
+         system = platform.system()
          compiler0 = compiler[0]
-         if compiler0 in stored_configuration and \
-            type_of_build in stored_configuration[compiler0]:
-            return stored_configuration[compiler0][type_of_build]
+         if system in stored_configuration and \
+            compiler0 in stored_configuration[system] and \
+            type_of_build in stored_configuration[system][compiler0]:
+            return stored_configuration[system][compiler0][type_of_build]
          else:
             print( "configuration not containing all data, using default configuration", file = sys.stderr)
 
