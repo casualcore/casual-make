@@ -12,7 +12,7 @@ def compose_paths( *args):
    root_path = environment.get("CASUAL_MAKE_SOURCE_ROOT")
    for arg in args:
       path = os.path.join(root_path,arg)
-      paths += executor.execute_raw(['cygpath', path]) + ':'
+      paths += executor.execute_raw(['cygpath', path]).decode() + ':'
    reply = paths[:-1]
    return reply
 
