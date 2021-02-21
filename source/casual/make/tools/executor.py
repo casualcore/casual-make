@@ -92,7 +92,7 @@ def command( cmd, name = None, directory = None, show_command = True, show_outpu
    if directory:
       with cd(directory):
          if name:
-            create_directory( os.path.dirname( name.filename))
+            create_directory( os.path.dirname( name.filename()))
          execute( cmd, show_command, show_output, env=env)
    else:
       execute( cmd, show_command, show_output, env=env)

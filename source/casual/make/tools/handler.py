@@ -20,36 +20,41 @@ def need_serial_execution( action_list):
       return True
       
    for item in action_list:
-      if item.need_serial_execution:
+      if item.serial():
          return True
    return False
 
 
 def worker( input, output):
-   try:
-      while True:
+   while True:  
+      try:
          item = input.get(True, 1)
 
-         try:
-            recipe.dispatch( item)
-            output.put( ( item, True))
-         except SystemError as ex:
-            if verbose: out.error( '\nprocessed makefile: ' + str(item.makefile))
-            if verbose: out.error( 'processed filename: ' + str(item.filename))
-            if not ignore_error: out.error( str(ex))
-            output.put( ( item, False))
-         except PermissionError as ex:
-            out.error( str(item))
-            out.error( ex)
-            output.put( ( item, False))
+         if item == terminate_process(): break
 
-   except Empty:
-      pass
+         recipe.dispatch( item)
+         output.put( ( item, True))
+      except SystemError as ex:
+         if verbose: out.error( '\nprocessed makefile: ' + str(item.makefile))
+         if verbose: out.error( 'processed filename: ' + str(item.filename))
+         if not ignore_error: out.error( str(ex))
+         output.put( ( item, False))
+         break
+      except PermissionError as ex:
+         out.error( str(item))
+         out.error( ex)
+         output.put( ( item, False))
+         break
+      except Empty:
+         pass
 
 def terminate_children( process):
    for p in process:
       if p.is_alive():
          p.join()
+
+def terminate_process():
+   return "terminate_process"
 
 
 def serial( actions):
@@ -95,6 +100,7 @@ class Handler:
 
          while actions:
             (action, ok) = self.reply_queue.get( True)
+
             actions.remove( action)
             if not ok and not ignore_error:
                raise SystemError("error building...")
@@ -124,14 +130,26 @@ class Handler:
          except:
             pass
 
+      for dummy in range( mp.cpu_count()):
+         self.task_queue.put( terminate_process(), True)
+
 
    def handle( self, actions):
       """
       Handle the action list in parallel or in serial
       """
+      def has_serial( item):
+         return item.serial()
 
-      if need_serial_execution( actions):
+      def has_parallel( item):
+         return not has_serial(item)
+
+      if environment.get("CASUAL_MAKE_SERIAL_EXECUTION"):
          serial( actions)
       else:
-         self.__parallel( actions)
+         serial_actions = list( filter( has_serial, actions))
+         parallel_actions = list( filter( has_parallel, actions))
+
+         self.__parallel( parallel_actions)
+         serial( serial_actions)
 

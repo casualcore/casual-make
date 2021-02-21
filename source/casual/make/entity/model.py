@@ -32,7 +32,7 @@ class Store( object):
       Fetch target from model
       """
       # First - exact match
-      if name in self.m_target_cache and filename in self.m_target_cache[name]:
+      if name and filename and name in self.m_target_cache and filename in self.m_target_cache[name]:
          return self.m_target_cache[name][filename]
       # Second - match by correct path
       elif paths:
@@ -51,10 +51,10 @@ class Store( object):
       Create and register target in model
       """
       if isinstance( name, Target):
-         target = self.get( name.name, name.filename)
+         target = self.get( name.name(), name.filename())
          if target:
             return target
-         self.m_target_cache[name.name][name.filename] = name
+         self.m_target_cache[name.name()][name.filename()] = name
          return name
       else:
          target = self.get( name, filename)
@@ -143,11 +143,10 @@ def calculate_max_timestamp( target):
    """
    Retrive max timestamp
    """
-   if not target.dependency: return 0.0
-   if target.max: return target.max
+   if not target.dependency(): return 0.0
+   if target.max(): return target.max()
 
-   target.max = max( target.dependency, key=lambda item: item.timestamp).timestamp
-   return target.max
+   return target.max( max( target.dependency(), key=lambda item: item.timestamp()).timestamp())
 
 def analyze_dependency_tree( target):
    """
@@ -160,14 +159,14 @@ def analyze_dependency_tree( target):
 
    if not target: raise SyntaxError('target is None')
 
-   if not target.dependency:
-      store.analyze_cache()[target] = target.execute
-      return target.execute
+   if not target.dependency():
+      store.analyze_cache()[target] = target.execute()
+      return target.execute()
    else:
       action_needed = False
       current_target = target
 
-      for child_target in current_target.dependency:
+      for child_target in current_target.dependency():
          action_required = analyze_dependency_tree( child_target)
 
          if current_target:
@@ -176,25 +175,25 @@ def analyze_dependency_tree( target):
 
                # The depedency steps is already evalutated to be run
                # So we need to run this one too.
-               current_target.execute = True
+               current_target.execute(True)
                action_needed = True
                continue
 
-            timestamp = current_target.timestamp
-            if current_target.filename and not timestamp:
+            timestamp = current_target.timestamp()
+            if current_target.filename() and not timestamp:
 
                # No timestamp, means no file.
                # Need to run this step
-               current_target.execute = True
+               current_target.execute(True)
                action_needed = True
                continue
                
             else:
                max_timestamp = calculate_max_timestamp( current_target)
-               if current_target.filename and timestamp < max_timestamp:
+               if current_target.filename() and timestamp < max_timestamp:
                   # The dependency files is newer.
                   # Need to run this step
-                  current_target.execute = True
+                  current_target.execute(True)
                   action_needed = True
                   continue
 
@@ -214,11 +213,11 @@ def construct_action_list( target):
 
       def dependencies_has_recipe( target):
          stack = []
-         stack.extend( target.dependency)
+         stack.extend( target.dependency())
          while stack:
             next = stack.pop()
-            if next.execute and next.has_recipes(): return True
-            if next.dependency: stack.extend( next.dependency)
+            if next.execute() and next.has_recipes(): return True
+            if next.dependency(): stack.extend( next.dependency())
          return False
 
       stack = [ ( 0, target)]
@@ -232,12 +231,12 @@ def construct_action_list( target):
             result.append( [])
          
          if dependencies_has_recipe( next):
-            if next.execute and next.has_recipes():
+            if next.execute() and next.has_recipes():
                result[ index].append( next)
             
-            for item in next.dependency:
+            for item in next.dependency():
                stack.append( ( index + 1, item))
-         elif next.execute and next.has_recipes():
+         elif next.execute() and next.has_recipes():
             # no dependencies with recipes, hence a 'leaf'
             leafs.append( next)
 

@@ -12,7 +12,7 @@ def add_item_to_list( items, item):
       
    for i in items:
       if isinstance( i, target.Target):
-         new_list.append( item + i.name)
+         new_list.append( item + i.name())
       else:
          new_list.append( item + i)
    return new_list

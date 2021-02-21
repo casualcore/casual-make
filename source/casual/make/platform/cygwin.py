@@ -70,29 +70,29 @@ def normalize_paths( paths):
    else:
       raise SystemError( "Error normlizing path: ", paths) 
 
-def create_compile( source, destination, context_directory, paths, directive):
+def execute_compile( source, destination, context_directory, paths, directive):
    
-   cmd = build_configuration['compiler'] + build_configuration['compile_directives'] + ['-o', destination.filename, source.filename] + common.add_item_to_list( escape_space( paths), '-I')
+   cmd = build_configuration['compiler'] + build_configuration['compile_directives'] + ['-o', destination.filename(), source.filename()] + common.add_item_to_list( escape_space( paths), '-I')
    executor.command( cmd, destination, context_directory)
 
-def create_includes(source, destination, context_directory, paths, dependency_file):
+def execute_dependency_generation(source, destination, context_directory, paths, dependency_file):
    
-   cmd = build_configuration['header_dependency_command'] + [source.filename] + common.add_item_to_list( escape_space( paths), '-I') + ['-MF',dependency_file]
+   cmd = build_configuration['header_dependency_command'] + [source.filename()] + common.add_item_to_list( escape_space( paths), '-I') + ['-MF',dependency_file]
    executor.command( cmd, destination, context_directory, show_command=True, show_output=False)
 
-def create_link_library(destination, context_directory, objects, library_paths, libraries):
+def execute_link_library(destination, context_directory, objects, library_paths, libraries):
    
-   cmd = build_configuration['library_linker'] + build_configuration['link_directives_lib']  + ['-o', destination.filename] + objects + library_paths_directive( escape_space(library_paths))  + common.add_item_to_list( libraries, '-l')
+   cmd = build_configuration['library_linker'] + build_configuration['link_directives_lib']  + ['-o', destination.filename()] + objects + library_paths_directive( escape_space(library_paths))  + common.add_item_to_list( libraries, '-l')
    executor.command( cmd, destination, context_directory)
 
-def create_link_executable(destination, context_directory, objects, library_paths, libraries):
+def execute_link_executable(destination, context_directory, objects, library_paths, libraries):
    
-   cmd = build_configuration['executable_linker'] + build_configuration['link_directives_exe'] + ['-o', destination.filename] + objects + library_paths_directive( escape_space(library_paths)) + common.add_item_to_list( libraries, '-l')
+   cmd = build_configuration['executable_linker'] + build_configuration['link_directives_exe'] + ['-o', destination.filename()] + objects + library_paths_directive( escape_space(library_paths)) + common.add_item_to_list( libraries, '-l')
    executor.command( cmd, destination, context_directory)
 
-def create_link_archive(destination, context_directory, objects):
+def execute_link_archive(destination, context_directory, objects):
    
-   cmd = build_configuration['archive_linker'] + [destination.filename] + objects
+   cmd = build_configuration['archive_linker'] + [destination.filename()] + objects
    executor.command( cmd, destination, context_directory)
 
 def make_objectname( source):

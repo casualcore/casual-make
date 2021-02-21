@@ -25,11 +25,11 @@ def find(file, paths):
          return p + '/' + file
    return None
 
-def make_files( objects):
+def retrieve_filenames( objects):
    files = []
    for item in objects:
       if isinstance( item, Target):
-         files.append( item.filename)
+         files.append( item.filename())
       else:
          files.append( item)
    return files
@@ -38,22 +38,18 @@ def dump():
    pprint.pprint( action_list)
 
 
-#
-# registred recipes
-#
-
-def create_includes( input):
+def execute_dependency_generation( input):
    """
    Recipe for creating dependency includes
    """
    source =  input['source']
    destination = input['destination']
-   context_directory = os.path.dirname( input['destination'].makefile)
+   context_directory = os.path.dirname( input['destination'].makefile())
    include_paths = input['include_paths']
    dependency_file = os.path.join( context_directory, input['dependencyfile'])
    if not os.path.exists( dependency_file ) or \
-      ( os.path.exists( source.filename) and ( os.path.getmtime( source.filename) > os.path.getmtime( dependency_file) )):
-      selector.create_includes( source, destination, context_directory, include_paths, dependency_file)
+      ( os.path.exists( source.filename()) and ( os.path.getmtime( source.filename()) > os.path.getmtime( dependency_file) )):
+      selector.execute_dependency_generation( source, destination, context_directory, include_paths, dependency_file)
 
 def compile( input):
    """
@@ -62,10 +58,10 @@ def compile( input):
    source =  input['source']
    destination = input['destination']
    include_paths = input['include_paths']
-   context_directory = os.path.dirname( input['destination'].makefile)
+   context_directory = os.path.dirname( input['destination'].makefile())
    directive = input['directive']
 
-   selector.create_compile( source, destination, context_directory, include_paths, directive)
+   selector.execute_compile( source, destination, context_directory, include_paths, directive)
   
 
 def link( input):
@@ -74,14 +70,14 @@ def link( input):
    """
 
    destination = input['destination']
-   objects = make_files( input['objects'])
-   context_directory = os.path.dirname( input['destination'].makefile)
+   objects = retrieve_filenames( input['objects'])
+   context_directory = os.path.dirname( input['destination'].makefile())
 
    # choose correct flavor of linking
    libraries = input['libraries']
    library_paths = input['library_paths']
 
-   selector.create_link_library( destination, context_directory, objects, library_paths, libraries)
+   selector.execute_link_library( destination, context_directory, objects, library_paths, libraries)
   
 def link_library( input):
    """
@@ -89,14 +85,14 @@ def link_library( input):
    """
 
    destination = input['destination']
-   objects = make_files( input['objects'])
-   context_directory = os.path.dirname( input['destination'].makefile)
+   objects = retrieve_filenames( input['objects'])
+   context_directory = os.path.dirname( input['destination'].makefile())
 
    # choose correct flavor of linking
    libraries = input['libraries']
    library_paths = input['library_paths']
 
-   selector.create_link_library( destination, context_directory, objects, library_paths, libraries)
+   selector.execute_link_library( destination, context_directory, objects, library_paths, libraries)
 
 def link_executable( input):
    """
@@ -104,13 +100,13 @@ def link_executable( input):
    """
 
    destination = input['destination']
-   objects = make_files( input['objects'])
-   context_directory = os.path.dirname( input['destination'].makefile)
+   objects = retrieve_filenames( input['objects'])
+   context_directory = os.path.dirname( input['destination'].makefile())
 
    libraries = input['libraries']
    library_paths = input['library_paths']
 
-   selector.create_link_executable( destination, context_directory, objects, library_paths, libraries)
+   selector.execute_link_executable( destination, context_directory, objects, library_paths, libraries)
 
 
 def link_archive( input):
@@ -119,31 +115,31 @@ def link_archive( input):
    """
 
    destination = input['destination']
-   objects = make_files( input['objects'])
-   context_directory = os.path.dirname( input['destination'].makefile)
+   objects = retrieve_filenames( input['objects'])
+   context_directory = os.path.dirname( input['destination'].makefile())
 
-   selector.create_link_archive( destination, context_directory, objects)
+   selector.execute_link_archive( destination, context_directory, objects)
 
 def link_unittest( input):
    """
    Recipe for linking objects to executables
    """
    destination = input['destination']
-   objects = make_files( input['objects'])
-   context_directory = os.path.dirname( input['destination'].makefile)
+   objects = retrieve_filenames( input['objects'])
+   context_directory = os.path.dirname( input['destination'].makefile())
 
    libraries = input['libraries']
    library_paths = input['library_paths']
 
-   selector.create_link_executable( destination, context_directory, objects, library_paths, libraries)
+   selector.execute_link_executable( destination, context_directory, objects, library_paths, libraries)
 
 
 def test( input):
    testfile = input['destination']
-   context_directory = os.path.dirname( input['destination'].makefile)
+   context_directory = os.path.dirname( input['destination'].makefile())
 
    library_paths = input['library_paths']
-   cmd = [testfile.filename, "--gtest_color=yes"]
+   cmd = [testfile.filename(), "--gtest_color=yes"]
    extra_arguments = environment.get("CASUAL_MAKE_COMMANDLINE_EXTRA_ARGUMENTS")
    if extra_arguments:
       cmd += extra_arguments.split()
@@ -152,12 +148,12 @@ def test( input):
    executor.command( cmd, directory = context_directory)
 
 
-def install( dict: input):
+def install( input):
    source = input['source']
    if isinstance( source, str):
       pass
    elif isinstance( source, Target):
-      source = source.filename
+      source = source.filename()
    else:
       source = " ".join( source)
 
@@ -183,7 +179,7 @@ def clean( input):
 
    with executor.cd(context_directory):
       if isinstance( file, Target):
-         filename = file.filename
+         filename = file.filename()
          if os.path.exists( filename):
             sys.stdout.write( output.reformat( "rm -f " + filename))
             if not environment.get("CASUAL_MAKE_DRY_RUN"):
@@ -198,7 +194,7 @@ def clean( input):
             if isinstance( f, str):
                filename = f
             else:
-               filename = f.filename
+               filename = f.filename()
             if os.path.exists( filename):
                sys.stdout.write( output.reformat( "rm -f " + filename))
                if not environment.get("CASUAL_MAKE_DRY_RUN"):
@@ -207,9 +203,9 @@ def clean( input):
 def dispatch( target):
    """
    This is the core dispatch function
-   """      
-   if target.recipes:
-      for recipe in target.recipes:
-         recipe.function( recipe.arguments)
+   """
+   if target.recipe():
+      for recipe in target.recipe():
+         recipe.function( recipe.arguments())
 
 
