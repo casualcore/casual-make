@@ -32,8 +32,8 @@ def assemble_path( sub_directory, name, main_directory = None, prefix = "", suff
 
 
 def casual_build_version():
-   if environment.get("CASUAL_BUILD_VERSION"):
-      return ["-DCASUAL_BUILD_VERSION=\"" + environment.get("CASUAL_BUILD_VERSION") + "\""]
+   if environment.get("CASUAL_MAKE_BUILD_VERSION"):
+      return ["-DCASUAL_MAKE_BUILD_VERSION=\"" + environment.get("CASUAL_MAKE_BUILD_VERSION") + "\""]
    else:
       return []
 
