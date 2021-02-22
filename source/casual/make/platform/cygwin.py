@@ -60,10 +60,10 @@ def normalize_paths( paths):
    if isinstance( paths, list):
       normalized = []
       for path in paths:
-         normalized.append( executor.execute_raw(['cygpath', path]))
+         normalized.append( executor.execute_raw(['cygpath', path]).decode())
       return normalized
    elif isinstance( paths, str):
-      return executor.execute_raw(['cygpath', paths])
+      return executor.execute_raw(['cygpath', paths]).decode()
    else:
       raise SystemError( "Error normlizing path: ", paths) 
 

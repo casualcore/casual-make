@@ -73,7 +73,7 @@ def set_environment( args):
       compiler_handler = environment.get("CASUAL_MAKE_COMPILER_HANDLER")
       compiler_handler_module = importlib.import_module( compiler_handler)
       gitpath = subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).rstrip().decode()
-      normalized_path = compiler_handler_module.normalize_paths( gitpath).decode()
+      normalized_path = compiler_handler_module.normalize_paths( gitpath)
       environment.set("CASUAL_MAKE_SOURCE_ROOT", normalized_path)
 
 def main():
