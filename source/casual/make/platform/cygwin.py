@@ -29,9 +29,6 @@ build_configuration = selector.build_configuration()
 
 LIBRARY_PATH_OPTION = "-Wl,-rpath-link="
 
-TOOLS_LIBRARY_PATHS = compose_paths( 'middleware/common/bin',
-   'middleware/configuration/bin')
-
 def library_paths_directive( paths):
 
    return common.add_item_to_list( paths, '-L') + common.add_item_to_list( paths, LIBRARY_PATH_OPTION)
@@ -45,7 +42,7 @@ def local_library_path( paths = []):
    reply = {
       'PATH' : environment.get('PATH','') + ':' + \
       re.sub( "\s", ":", environment.get('CASUAL_OPTIONAL_LIBRARY_PATHS','')) + \
-         ':' + TOOLS_LIBRARY_PATHS
+         ':' + compose_paths( 'middleware/common/bin', 'middleware/configuration/bin')
       }
 
    if paths:

@@ -153,11 +153,11 @@ def analyze_dependency_tree( target):
    Analyzing tree for actions to take
    Returns: is action required? True/False
    """
-
    if target in store.analyze_cache():
       return store.analyze_cache()[target]
 
-   if not target: raise SyntaxError('target is None')
+   if not target:
+      raise SyntaxError('target is None')
 
    if not target.dependency():
       store.analyze_cache()[target] = target.execute()
@@ -167,6 +167,7 @@ def analyze_dependency_tree( target):
       current_target = target
 
       for child_target in current_target.dependency():
+
          action_required = analyze_dependency_tree( child_target)
 
          if current_target:

@@ -104,18 +104,21 @@ class Target(object):
 
         return self.hash == other.hash
         
-   #def __repr__(self):
-   #   if self._name:
-   #      return self._name
+   def __repr__(self):
+      if self._name:
+         return self._name
 
-   #def __str__(self):
-   #   if self._name:
-   #      return self._name
+   def __str__(self):
+      if self._name:
+         return self._name
 
    def __hash__(self):
       return self.hash
 
    def add_dependency( self, target):
+      if not target:
+         return self
+
       if isinstance( target, list):
          self._dependency.extend( target)
       else:
@@ -124,6 +127,9 @@ class Target(object):
       return self
 
    def add_recipe( self, recipe):
+      if not recipe:
+         return self
+         
       if isinstance( recipe, list):
          self._recipe.extend( recipe)
       else:

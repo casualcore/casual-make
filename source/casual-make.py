@@ -68,7 +68,13 @@ def set_environment( args):
    if args.verbose: environment.set("CASUAL_MAKE_VERBOSE")
 
    if not environment.get("CASUAL_MAKE_SOURCE_ROOT"):
-      environment.set("CASUAL_MAKE_SOURCE_ROOT", os.getcwd())
+      # setup environment
+      import importlib
+      compiler_handler = environment.get("CASUAL_MAKE_COMPILER_HANDLER")
+      compiler_handler_module = importlib.import_module( compiler_handler)
+      gitpath = subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).rstrip().decode()
+      normalized_path = compiler_handler_module.normalize_paths( gitpath).decode()
+      environment.set("CASUAL_MAKE_SOURCE_ROOT", normalized_path)
 
 def main():
 
@@ -93,7 +99,7 @@ def main():
       import casual.make.tools.output as output
 
       # Build the actual model from a file
-      output.print( "building model: ", end='')
+      output.print( "building model: ", end="")
       model.build()
 
       selected_target = model.get( selected)
