@@ -18,7 +18,7 @@ class Target(object):
       self._recipe = []
       self._max = None
       self._filename = None
-      self._timestamp = None
+      self._timestamp = 0.0
 
 
       directory = ''
@@ -61,7 +61,7 @@ class Target(object):
 
    def max(self, max = None):
 
-      if not max:
+      if max == None:
          return self._max
 
       self._max = max

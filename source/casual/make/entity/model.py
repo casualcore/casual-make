@@ -146,7 +146,8 @@ def calculate_max_timestamp( target):
    if not target.dependency(): return 0.0
    if target.max(): return target.max()
 
-   return target.max( max( target.dependency(), key=lambda item: item.timestamp()).timestamp())
+   value = max( target.dependency(), key=lambda item: item.timestamp()).timestamp()
+   return target.max( value)
 
 def analyze_dependency_tree( target):
    """
@@ -191,6 +192,7 @@ def analyze_dependency_tree( target):
                
             else:
                max_timestamp = calculate_max_timestamp( current_target)
+
                if current_target.filename() and timestamp < max_timestamp:
                   # The dependency files is newer.
                   # Need to run this step
