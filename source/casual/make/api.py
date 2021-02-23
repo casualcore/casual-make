@@ -33,6 +33,8 @@ test_target = model.register('test').execute(True).serial(True)
 clean_target = model.register( 'clean')
 install_target = model.register('install').serial(True)
 
+verbose = True if environment.get("CASUAL_MAKE_VERBOSE") else False  
+
 #
 # Helpers
 #
@@ -92,6 +94,22 @@ def make_clean_target( targets, makefile):
          .execute(True)
       )  
 
+#
+# environment functions
+#
+def casual_make_source_root():
+   value = environment.get("CASUAL_MAKE_SOURCE_ROOT")
+   if not value and verbose: print( "\nCASUAL_MAKE_SOURCE_ROOT is not set")
+   return value
+
+def casual_make_optional_include_paths():
+   value = environment.get("CASUAL_MAKE_OPTIONAL_INCLUDE_PATHS")
+   if not value and verbose: print( "\nCASUAL_MAKE_OPTIONAL_INCLUDE_PATHS is not set")
+   return value
+def casual_make_optional_library_paths():
+   value = environment.get("CASUAL_MAKE_OPTIONAL_LIBRARY_PATHS")
+   if not value and verbose: print( "\nCASUAL_MAKE_OPTIONAL_LIBRARY_PATHS is not set")
+   return value
 #
 # Main DSL
 #
