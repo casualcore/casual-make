@@ -104,12 +104,19 @@ def casual_make_source_root():
 
 def casual_make_optional_include_paths():
    value = environment.get("CASUAL_MAKE_OPTIONAL_INCLUDE_PATHS")
-   if not value and verbose: print( "\nCASUAL_MAKE_OPTIONAL_INCLUDE_PATHS is not set")
-   return value
+   if value:
+      return value.split()
+   if verbose:
+      print( "\nCASUAL_MAKE_OPTIONAL_INCLUDE_PATHS is not set")
+   return []
+
 def casual_make_optional_library_paths():
    value = environment.get("CASUAL_MAKE_OPTIONAL_LIBRARY_PATHS")
-   if not value and verbose: print( "\nCASUAL_MAKE_OPTIONAL_LIBRARY_PATHS is not set")
-   return value
+   if value:
+      return value.split()
+   if verbose: 
+      print( "\nCASUAL_MAKE_OPTIONAL_LIBRARY_PATHS is not set")
+   return []
 #
 # Main DSL
 #
