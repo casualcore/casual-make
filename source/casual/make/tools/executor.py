@@ -74,7 +74,7 @@ def execute(command, show_command=True, show_output=True, env=None):
 
         if not state.settings.dry_run:
             reply = subprocess.run(command, stdout=out,
-                                   stderr=err, check=True, bufsize=1, env=env)
+                                   stderr=err, check=True, env=env)
 
     except KeyboardInterrupt:
         # todo: abort living subprocess here
