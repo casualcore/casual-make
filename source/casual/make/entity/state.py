@@ -4,9 +4,12 @@ import subprocess
 
 import casual.make.tools.environment as env
 
-
 class Settings(object):
+
     def __init__(self):
+        self.clear()
+
+    def clear(self):
         self.dry_run = False
         self.raw_format = False
         self.compiler_handler = None
@@ -85,3 +88,5 @@ def environment(args):
         normalized_path = compiler_handler_module.normalize_paths(gitpath)
         settings.source_root = normalized_path
         env.set("CASUAL_MAKE_SOURCE_ROOT", settings.source_root)
+    else:
+        settings.source_root = env.get("CASUAL_MAKE_SOURCE_ROOT")
