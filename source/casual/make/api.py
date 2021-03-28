@@ -162,6 +162,11 @@ def Compile(sourcefile, objectfile=None, directive=[]):
         sourcefile, makefile.filename()), makefile=makefile.filename())
 
     dependencyfile_target.add_dependency(source_target)
+    force_generate_dependency = False
+    for object in object_dependencies:
+        if object._timestamp == 0:
+            force_generate_dependency = True
+            break
 
     # no dependency file - add at least source file
     if not object_dependencies:
@@ -181,7 +186,8 @@ def Compile(sourcefile, objectfile=None, directive=[]):
         'dependencyfile':  dependencyfile,
         'source': source_target,
         'include_paths': model.include_paths(makefile.filename()),
-        'directive': directive
+        'directive': directive,
+        'force_generate_dependency' : force_generate_dependency
     }
 
     object_target.add_recipe(

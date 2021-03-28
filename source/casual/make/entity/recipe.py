@@ -50,8 +50,10 @@ def execute_dependency_generation(input):
     context_directory = os.path.dirname(input['destination'].makefile())
     include_paths = input['include_paths']
     dependency_file = os.path.join(context_directory, input['dependencyfile'])
+    force_generate_dependency = input['force_generate_dependency']
     if not os.path.exists(dependency_file) or \
-       (os.path.exists(source.filename()) and (os.path.getmtime(source.filename()) > os.path.getmtime(dependency_file))):
+        force_generate_dependency or \
+        (os.path.exists(source.filename()) and (os.path.getmtime(source.filename()) > os.path.getmtime(dependency_file))):
         selector.execute_dependency_generation(
             source, destination, context_directory, include_paths, dependency_file)
 

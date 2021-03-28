@@ -20,7 +20,7 @@ class Target(object):
         self._recipe = []
         self._max = None
         self._filename = None
-        self._timestamp = 0.0
+        self._timestamp = 0
 
         directory = ''
         if makefile:
