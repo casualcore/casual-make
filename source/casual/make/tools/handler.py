@@ -52,6 +52,7 @@ def serial(actions):
     """
     Handle actions in serial
     """
+    actions.sort(key=lambda x: x._targetid)
     for item in actions:
         try:
             recipe.dispatch(item)
@@ -88,6 +89,7 @@ class Handler:
         """
         Handle actions in parallel
         """
+        actions.sort(key=lambda x: x._targetid)
 
         try:
             # Submit actions
@@ -143,6 +145,7 @@ class Handler:
             serial(actions)
         else:
             serial_actions = list(filter(has_serial, actions))
+
             parallel_actions = list(filter(has_parallel, actions))
 
             self.__parallel(parallel_actions)

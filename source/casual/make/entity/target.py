@@ -1,5 +1,11 @@
 import os
 
+targetid = 0
+
+def nextid():
+    global targetid
+    targetid = targetid + 1
+    return targetid
 
 class Recipe(object):
     def __init__(self, function, arguments):
@@ -21,6 +27,7 @@ class Target(object):
         self._max = None
         self._filename = None
         self._timestamp = 0
+        self._targetid = nextid()
 
         directory = ''
         if makefile:
