@@ -29,8 +29,10 @@ def library_directive(libraries):
 
 
 def local_library_path(paths=[]):
-
-    return {'LD_LIBRARY_PATH': re.sub("\s", ":", environment.get('CASUAL_OPTIONAL_LIBRARY_PATHS', ''))}
+    ld_library_path = environment.get('LD_LIBRARY_PATH','')
+    return {'LD_LIBRARY_PATH': 
+        ld_library_path + ":" + ":".join(paths)
+        }
 
 
 def escape_space(paths):
