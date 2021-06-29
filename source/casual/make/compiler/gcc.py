@@ -27,6 +27,8 @@ OPTIONAL_FLAGS = common.optional_flags()
 
 VERSION_DIRECTIVE = common.casual_build_version()
 
+GITHASH_DIRECTIVE = common.casual_build_commit_hash()
+
 # Linkers
 LIBRARY_LINKER = CXX
 EXECUTABLE_LINKER = common.executable_linker()
@@ -45,7 +47,7 @@ GENERAL_LINK_DIRECTIVE = ["-fPIC"]
 
 
 def compile_directives(warning_directive):
-    configuration = VERSION_DIRECTIVE + warning_directive + \
+    configuration = VERSION_DIRECTIVE + GITHASH_DIRECTIVE + warning_directive + \
         STD_DIRECTIVE + OPTIONAL_FLAGS + OPTIONAL_POSSIBLE_FLAGS
 
     if environment.get("CASUAL_MAKE_DEBUG"):

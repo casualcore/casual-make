@@ -4,6 +4,7 @@ import casual.make.entity.target as target
 import casual.make.tools.environment as environment
 
 import os
+import subprocess
 
 
 def add_item_to_list(items, item):
@@ -39,6 +40,15 @@ def casual_build_version():
     if environment.get("CASUAL_MAKE_BUILD_VERSION"):
         return ["-DCASUAL_MAKE_BUILD_VERSION=\"" + environment.get("CASUAL_MAKE_BUILD_VERSION") + "\""]
     else:
+        return []
+
+
+def casual_build_commit_hash():
+    try:
+        githash = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"]).rstrip().decode()
+        return ["-DCASUAL_MAKE_COMMIT_HASH=\"" + githash + "\""]
+    except:
         return []
 
 
