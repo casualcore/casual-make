@@ -50,7 +50,8 @@ def environment(args):
         elif platform.system().startswith('CYGWIN'):
             module = "casual.make.platform.cygwin"
         else:
-            SystemError("Platform not supported")
+            message = "Platform " + platform.system() + " not supported"
+            raise SystemError(message)
         settings.compiler_handler = module
     elif args.compiler == 'cl':
         settings.compiler_handler = "casual.make.platform.windows"
