@@ -186,7 +186,7 @@ def analyze_dependency_tree(target):
 
             if current_target:
 
-                if action_required or state.settings.force:
+                if action_required or state.settings.force():
 
                     # The depedency steps is already evalutated to be run
                     # So we need to run this one too.

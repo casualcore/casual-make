@@ -20,7 +20,7 @@ build_configuration = selector.build_configuration()
 #
 # VALGRIND
 #
-if state.settings.use_valgrind:
+if state.settings.use_valgrind():
     PRE_UNITTEST_DIRECTIVE = "valgrind --xml=yes --xml-file=valgrind.xml".split()
 
 #

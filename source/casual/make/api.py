@@ -11,7 +11,7 @@ from casual.make.entity.target import Target, Recipe
 from casual.make.tools.executor import importCode
 
 import importlib
-compiler_handler = state.settings.compiler_handler
+compiler_handler = state.settings.compiler_handler()
 selector = importlib.import_module(compiler_handler)
 
 #
@@ -107,12 +107,12 @@ def make_clean_target(targets, makefile):
 #
 
 def source_root():
-    value = state.settings.source_root
+    value = state.settings.source_root()
 
     if value:
         return value
 
-    if state.settings.verbose:
+    if state.settings.verbose():
         print("\nCASUAL_MAKE_SOURCE_ROOT is not set")
 
     return ""
@@ -123,7 +123,7 @@ def optional_include_paths():
     if value:
         return value.split(":")
 
-    if state.settings.verbose:
+    if state.settings.verbose():
         print("\nCASUAL_MAKE_OPTIONAL_INCLUDE_PATHS is not set")
 
     return []
@@ -134,7 +134,7 @@ def optional_library_paths():
     if value:
         return value.split(":")
 
-    if state.settings.verbose:
+    if state.settings.verbose():
         print("\nCASUAL_MAKE_OPTIONAL_LIBRARY_PATHS is not set")
 
     return []

@@ -21,11 +21,11 @@ def worker(input, output):
             recipe.dispatch(item)
             output.put((item, True))
         except SystemError as ex:
-            if state.settings.verbose:
+            if state.settings.verbose():
                 out.error('\nprocessed makefile: ' + str(item.makefile))
-            if state.settings.verbose:
+            if state.settings.verbose():
                 out.error('processed filename: ' + str(item.filename))
-            if not state.settings.ignore_errors:
+            if not state.settings.ignore_errors():
                 out.error(str(ex))
             output.put((item, False))
             break
@@ -57,11 +57,11 @@ def serial(actions):
         try:
             recipe.dispatch(item)
         except SystemError as ex:
-            if state.settings.verbose:
+            if state.settings.verbose():
                 out.error('\nprocessed makefile: ' + str(item.makefile))
-            if state.settings.verbose:
+            if state.settings.verbose():
                 out.error('processed filename: ' + str(item.filename))
-            if not state.settings.ignore_errors:
+            if not state.settings.ignore_errors():
                 raise
 
 
@@ -100,7 +100,7 @@ class Handler:
                 (action, ok) = self.reply_queue.get(True)
 
                 actions.remove(action)
-                if not ok and not state.settings.ignore_errors:
+                if not ok and not state.settings.ignore_errors():
                     raise SystemError("error building...")
 
         except KeyboardInterrupt:
@@ -141,7 +141,7 @@ class Handler:
         def has_parallel(item):
             return not has_serial(item)
 
-        if state.settings.serial:
+        if state.settings.serial():
             serial(actions)
         else:
             serial_actions = list(filter(has_serial, actions))

@@ -58,8 +58,8 @@ def execute_raw(command):
 def execute(command, show_command=True, show_output=True, env=None):
 
     try:
-        if show_command and not state.settings.quiet:
-            if state.settings.raw_format:
+        if show_command and not state.settings.quiet():
+            if state.settings.raw_format():
                 output.print(' '.join(str(v) for v in command), format=False)
             else:
                 output.print(' '.join(str(v) for v in command), end='')
@@ -72,7 +72,7 @@ def execute(command, show_command=True, show_output=True, env=None):
             # append to global env
             env = dict(os.environ, **env)
 
-        if not state.settings.dry_run:
+        if not state.settings.dry_run():
             reply = subprocess.run(command, stdout=out,
                                    stderr=err, check=True, env=env)
 
@@ -81,7 +81,7 @@ def execute(command, show_command=True, show_output=True, env=None):
         raise SystemError("\naborted due to ctrl-c\n")
 
     except subprocess.CalledProcessError as ex:
-        if state.settings.verbose:
+        if state.settings.verbose():
             output.error('processed command: ' + ' '.join(str(v)
                                                           for v in command))
         if ex.stderr:

@@ -4,7 +4,7 @@ import casual.make.entity.state as state
 import re
 
 # globals
-if state.settings.no_colors:
+if state.settings.no_colors():
     color_module.color.active(False)
 
 

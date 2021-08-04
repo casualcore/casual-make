@@ -15,9 +15,9 @@ def build_configuration():
 
     compiler = environment.get("CXX") or ["g++"]
     type_of_build = "normal"
-    if state.settings.debug:
+    if state.settings.debug():
         type_of_build = "debug"
-    elif state.settings.analyze:
+    elif state.settings.analyze():
         type_of_build = "analyze"
 
     build_configuration_path = environment.get(
