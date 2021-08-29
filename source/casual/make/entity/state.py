@@ -15,7 +15,7 @@ class Settings(object):
     def setup(self):
         self.model["dry_run"] = False
         self.model["raw_format"] = False
-        self.model["compiler_handler"] = None
+        self.model["compiler_handler_module"] = None
         self.model["extra_args"] = []
         self.model["serial"] = False
         self.model["force"] = False
@@ -28,11 +28,14 @@ class Settings(object):
         self.model["verbose"] = False
         self.model["source_root"] = None
 
+        # remove when backward compatibility is not needed.
+        self.compiler_handler = None
+
 
     # convenience functions
     def dry_run(self): return self.model["dry_run"]
     def raw_format(self): return self.model["raw_format"]
-    def compiler_handler(self): return self.model["compiler_handler"]
+    def compiler_handler_module(self): return self.model["compiler_handler_module"]
     def extra_args(self): return self.model["extra_args"]
     def serial(self): return self.model["serial"]
     def force(self): return self.model["force"]
@@ -69,7 +72,10 @@ def environment(args):
         settings.model["raw_format"] = True
     # use your own compiler handler with this option
     if args.compiler_handler:
-        settings.model["compiler_handler"] = args.compiler_handler
+        settings.model["compiler_handler_module"] = args.compiler_handler
+        # remove when backward compatibility is not needed.
+        settings.compiler_handler = args.compiler_handler
+
     # use built-in compiler handler which uses g++
     elif args.compiler == 'g++':
         module = None
@@ -82,9 +88,11 @@ def environment(args):
         else:
             message = "Platform " + platform.system() + " not supported"
             raise SystemError(message)
-        settings.model["compiler_handler"] = module
+        settings.model["compiler_handler_module"] = module
+        # remove when backward compatibility is not needed.
+        settings.compiler_handler = module
     elif args.compiler == 'cl':
-        settings.model["compiler_handler"] = "casual.make.platform.windows"
+        settings.model["compiler_handler_module"] = "casual.make.platform.windows"
     else:
         raise SystemError("Compilerhandler not given or not supported")
 
@@ -113,7 +121,7 @@ def environment(args):
         # setup environment
         import importlib
         compiler_handler_module = importlib.import_module(
-            settings.compiler_handler())
+            settings.compiler_handler_module())
         gitpath = subprocess.check_output(
             ["git", "rev-parse", "--show-toplevel"]).rstrip().decode()
         normalized_path = compiler_handler_module.normalize_paths(gitpath)

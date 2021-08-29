@@ -11,8 +11,8 @@ from casual.make.entity.target import Target, Recipe
 from casual.make.tools.executor import importCode
 
 import importlib
-compiler_handler = state.settings.compiler_handler()
-selector = importlib.import_module(compiler_handler)
+compiler_handler_module = state.settings.compiler_handler_module()
+selector = importlib.import_module(compiler_handler_module)
 
 #
 # global setup for operations
@@ -162,11 +162,6 @@ def Compile(sourcefile, objectfile=None, directive=[]):
         sourcefile, makefile.filename()), makefile=makefile.filename())
 
     dependencyfile_target.add_dependency(source_target)
-    force_generate_dependency = False
-    for object in object_dependencies:
-        if object._timestamp == 0:
-            force_generate_dependency = True
-            break
 
     # no dependency file - add at least source file
     if not object_dependencies:
@@ -174,8 +169,6 @@ def Compile(sourcefile, objectfile=None, directive=[]):
 
     # add dependencyfile_target to dependency
     object_dependencies.append(dependencyfile_target)
-    # add makefile to dependency
-    object_dependencies.append(makefile)
 
     # register the objectfile in module
     object_target = model.register(name=objectfile, filename=absolute_path(
@@ -186,8 +179,7 @@ def Compile(sourcefile, objectfile=None, directive=[]):
         'dependencyfile':  dependencyfile,
         'source': source_target,
         'include_paths': model.include_paths(makefile.filename()),
-        'directive': directive,
-        'force_generate_dependency' : force_generate_dependency
+        'directive': directive
     }
 
     object_target.add_recipe(
@@ -227,7 +219,7 @@ def LinkLibrary(destination, objects, libs):
 
     library_target.add_recipe(
         Recipe(recipe.link_library, arguments)
-    ).add_dependency(objects + normalized_library_targets)
+    ).add_dependency(objects + normalized_library_targets).add_dependency(makefile)
 
     link_library_target.add_dependency([library_target, makefile])
 
@@ -255,7 +247,7 @@ def LinkArchive(destination, objects):
 
     archive_target.add_recipe(
         Recipe(recipe.link_archive, arguments)
-    ).add_dependency(objects)
+    ).add_dependency(objects).add_dependency(makefile)
 
     link_archive_target.add_dependency([archive_target, makefile])
 
@@ -284,7 +276,7 @@ def LinkExecutable(destination, objects, libs):
 
     executable_target.add_recipe(
         Recipe(recipe.link_executable, arguments)
-    ).add_dependency(objects + normalized_library_targets)
+    ).add_dependency(objects + normalized_library_targets).add_dependency(makefile)
 
     link_executable_target.add_dependency([executable_target, makefile])
 
@@ -314,7 +306,7 @@ def LinkUnittest(destination, objects, libs):
 
     executable_target.add_recipe(
         Recipe(recipe.link_unittest, arguments)
-    ).add_dependency(objects + normalized_library_targets)
+    ).add_dependency(objects + normalized_library_targets).add_dependency(makefile)
 
     link_unittest_target.add_dependency([executable_target, makefile])
 
