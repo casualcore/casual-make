@@ -40,6 +40,6 @@ def build_configuration():
 
     # use default
     if environment.get("CXX") == 'g++':
-        return gcc.build_configuration()
+        return gcc.build_configuration(type_of_build)
 
-    return gcc.build_configuration()
+    return gcc.build_configuration(type_of_build)

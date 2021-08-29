@@ -46,15 +46,15 @@ OPTIONAL_POSSIBLE_FLAGS = common.optional_possible_flags()
 GENERAL_LINK_DIRECTIVE = ["-fPIC"]
 
 
-def compile_directives(warning_directive):
+def compile_directives(type_of_build, warning_directive):
     configuration = VERSION_DIRECTIVE + GITHASH_DIRECTIVE + warning_directive + \
         STD_DIRECTIVE + OPTIONAL_FLAGS + OPTIONAL_POSSIBLE_FLAGS
 
-    if environment.get("CASUAL_MAKE_DEBUG"):
+    if type_of_build in ['debug', 'analyze']:
         configuration += ["-ggdb", "-c", "-fPIC"] if platform.system() == 'Darwin' else [
             "-ggdb", "-c", "-fPIC"]
 
-        if environment.get("CASUAL_MAKE_ANALYZE"):
+        if type_of_build == 'analyze':
             configuration += ["-fprofile-arcs", "-ftest-coverage"]
     else:
         configuration += ["-c", "-O3", "-fPIC", "-pthread"]
@@ -62,14 +62,15 @@ def compile_directives(warning_directive):
     return configuration
 
 
-def link_directives_lib(warning_directive):
+def link_directives_lib(type_of_build, warning_directive):
 
     configuration = GENERAL_LINK_DIRECTIVE + warning_directive + STD_DIRECTIVE
-    if environment.get("CASUAL_MAKE_DEBUG"):
+
+    if type_of_build in ['debug', 'analyze']:
         configuration += ["-ggdb", "-dynamiclib"] if platform.system(
         ) == 'Darwin' else ["-g", "-pthread", "-shared", "-fpic"]
 
-        if environment.get("CASUAL_MAKE_ANALYZE"):
+        if type_of_build == 'analyze':
             configuration += ["-fprofile-arcs"] if platform.system() == 'Darwin' else [
                 "-O0", "-coverage"]
     else:
@@ -79,14 +80,14 @@ def link_directives_lib(warning_directive):
     return configuration
 
 
-def link_directives_exe(warning_directive):
+def link_directives_exe(type_of_build, warning_directive):
 
     configuration = GENERAL_LINK_DIRECTIVE + warning_directive + STD_DIRECTIVE
-    if environment.get("CASUAL_MAKE_DEBUG"):
-        configuration += ["-ggdb"] if platform.system() == 'Darwin' else ["-g",
-                                                                          "-pthread", "-fpic"]
 
-        if environment.get("CASUAL_MAKE_ANALYZE"):
+    if type_of_build in ['debug', 'analyze']:
+        configuration += ["-ggdb"] if platform.system() == 'Darwin' else ["-g","-pthread", "-fpic"]
+
+        if type_of_build == 'analyze':
             configuration += ["-lgcov", "-fprofile-arcs"] if platform.system() == 'Darwin' else [
                 "-O0", "-coverage"]
     else:
@@ -96,10 +97,11 @@ def link_directives_exe(warning_directive):
     return configuration
 
 
-def link_directives_archive(warning_directive):
+def link_directives_archive(type_of_build, warning_directive):
 
     configuration = GENERAL_LINK_DIRECTIVE + warning_directive + STD_DIRECTIVE
-    if environment.get("CASUAL_MAKE_DEBUG"):
+
+    if type_of_build in ['debug', 'analyze']:
         configuration = ["-ggdb"] if platform.system() == 'Darwin' else ["-g"]
     else:
         configuration = [
@@ -108,7 +110,7 @@ def link_directives_archive(warning_directive):
     return configuration
 
 
-def build_configuration(warning_directive=warning_directive()):
+def build_configuration( type_of_build="normal", warning_directive=warning_directive()):
 
     configuration = {
         "compiler": COMPILER,
@@ -118,12 +120,15 @@ def build_configuration(warning_directive=warning_directive()):
         "archive_linker": ARCHIVE_LINKER,
     }
 
-    configuration["compile_directives"] = compile_directives(warning_directive)
+    configuration["compile_directives"] = compile_directives(type_of_build, warning_directive)
     configuration["link_directives_lib"] = link_directives_lib(
+        type_of_build,
         warning_directive)
     configuration["link_directives_exe"] = link_directives_exe(
+        type_of_build,
         warning_directive)
     configuration["link_directives_archive"] = link_directives_archive(
+        type_of_build,
         warning_directive)
 
     return configuration
