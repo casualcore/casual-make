@@ -43,16 +43,16 @@ def library_directive(libraries):
 
 def local_library_path(paths=[]):
 
+    path_to_add = re.sub("\s", ":", environment.get('CASUAL_OPTIONAL_LIBRARY_PATHS', '')) + \
+        ':' + compose_paths('middleware/common/bin', 'middleware/configuration/bin')
+
     reply = {
-        'PATH': environment.get('PATH', '') + ':' +
-        re.sub("\s", ":", environment.get('CASUAL_OPTIONAL_LIBRARY_PATHS', '')) +
-        ':' + compose_paths('middleware/common/bin',
-                            'middleware/configuration/bin')
+        'PATH': path_to_add + ':' + environment.get('PATH', '')
     }
 
     if paths:
         extra_path = compose_paths(*paths)
-        reply['PATH'] += ':' + extra_path
+        reply['PATH'] = extra_path + ':' + reply['PATH']
 
     return reply
 
