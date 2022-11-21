@@ -42,7 +42,7 @@ def library_directive(libraries):
 def local_library_path(paths=[]):
     ld_library_path = environment.get('LD_LIBRARY_PATH','')
     return {'LD_LIBRARY_PATH': 
-        ld_library_path + ":" + ":".join(paths)
+        ":".join(paths) + ":" + ld_library_path
         }
 
 
