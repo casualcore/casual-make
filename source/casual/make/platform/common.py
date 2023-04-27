@@ -87,9 +87,9 @@ def archive_linker():
 
 def cpp_standard():
     if platform.system().startswith('CYGWIN'):
-        return ["-std=gnu++17"]
+        return ["-std=gnu++23"]
     else:
-        return ["-std=c++17"]
+        return ["-std=c++2b"]
 
 
 def optional_possible_flags():
