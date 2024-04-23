@@ -57,7 +57,7 @@ def execute_dependency_generation(source, destination, context_directory, paths,
     cmd = build_configuration['header_dependency_command'] + [source.filename(
     )] + common.add_item_to_list(escape_space(paths), '-I') + ['-MF', dependency_file]
     executor.command(cmd, destination, context_directory,
-                     show_command=True, show_output=False)
+                     show_command=False, show_output=False)
 
 
 def execute_link_library(destination, context_directory, objects, library_paths, libraries):
