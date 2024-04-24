@@ -90,6 +90,9 @@ def dump_model():
 def dump_target_cache():
     pprint.pprint(store.target_cache())
 
+def list_targets():
+    for target in store.target_cache():
+        print(target)
 
 def dump_analyze_cache():
     pprint.pprint(store.analyze_cache())
@@ -286,12 +289,12 @@ def construct_action_list(target):
     return normalize(flatten(target))
 
 
-def build():
+def build(makefile):
     """
     Build the model from a file
     """
 
     # Open the default name 'makefile.cmk'
     # Only supported option right now
-    with open("makefile.cmk") as file:
-        importCode(file, "makefile.cmk", "makefile", 1)
+    with open(makefile) as file:
+        importCode(file, makefile, "makefile", 1)

@@ -27,12 +27,11 @@ def main():
         # Need to import this after argparse
         import casual.make.entity.model as model
         import casual.make.tools.handler as handler
-        import casual.make.tools.executor as executor
         import casual.make.tools.output as output
 
         # Build the actual model from a file
         output.print("building model: ", end="")
-        model.build()
+        model.build(args.makefile)
 
         selected_target = model.get(selected)
 
@@ -46,6 +45,10 @@ def main():
         actions = model.construct_action_list(selected_target)
 
         output.print("done")
+
+        if args.list_targets:
+            model.list_targets()
+            raise SystemExit(1)
 
         total_handled = 0
         number_of_actions = 0
