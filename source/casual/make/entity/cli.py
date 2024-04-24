@@ -10,6 +10,8 @@ def handle_arguments(arguments = None):
                         nargs='?', default="link")
 
     parser.add_argument(
+        "-m", "--makefile", help="makefile to build", default="makefile.cmk")
+    parser.add_argument(
         "-d", "--debug", help="compiling with debug flags", action="store_true")
     parser.add_argument(
         "--use-valgrind", help="use valgrind when compiling", action="store_true")
@@ -39,7 +41,8 @@ def handle_arguments(arguments = None):
                         help="print some verbose output", action="store_true")
     parser.add_argument(
         "--version", help="print version number", action="store_true")
-
+    parser.add_argument(
+        "--list-targets", help="print all targets in model", action="store_true")
     parser.add_argument(
         "extra_args", help="argument passed to action", nargs=argparse.REMAINDER)
     args = parser.parse_args(arguments)
