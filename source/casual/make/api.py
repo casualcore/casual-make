@@ -81,7 +81,7 @@ def includes(dependency_file, makefile):
             else:
                 abs_path = os.path.abspath(
                     os.path.join(context_directory, filename))
-            item = model.store.register(abs_path, abs_path, makefile)
+            item = model.register(abs_path, abs_path, makefile)
 
             reply.append(item)
         return reply
@@ -96,7 +96,7 @@ def make_clean_target(targets, makefile):
     for target in targets:
         clean_target.add_dependency(
             model.register(
-                'clean_' + target.name(), makefile=makefile.filename())
+                target.name(), filename=target.filename(), makefile=makefile.filename(), action="clean")
             .add_recipe(
                 Recipe(recipe.clean, {'filename': target, 'makefile': makefile.filename()}))
             .execute(True)
@@ -154,12 +154,12 @@ def Compile(sourcefile, objectfile=None, directive=[]):
         objectfile = selector.make_objectname(sourcefile)
 
     dependencyfile = selector.make_dependencyfilename(objectfile)
-    dependencyfile_target = model.register(name=dependencyfile, filename=absolute_path(
-        dependencyfile, makefile.filename()), makefile=makefile.filename())
+    file = absolute_path( dependencyfile, makefile.filename())
+    dependencyfile_target = model.register(name=file, filename=file, makefile=makefile.filename())
     object_dependencies = includes(
         dependencyfile_target.filename(), makefile=makefile.filename())
-    source_target = model.register(name=sourcefile, filename=absolute_path(
-        sourcefile, makefile.filename()), makefile=makefile.filename())
+    file = absolute_path( sourcefile, makefile.filename())
+    source_target = model.register(name=file, filename=file, makefile=makefile.filename())
 
     dependencyfile_target.add_dependency(source_target)
 
@@ -171,8 +171,8 @@ def Compile(sourcefile, objectfile=None, directive=[]):
     object_dependencies.append(dependencyfile_target)
 
     # register the objectfile in module
-    object_target = model.register(name=objectfile, filename=absolute_path(
-        objectfile, makefile.filename()), makefile=makefile.filename())
+    file = absolute_path(objectfile, makefile.filename())
+    object_target = model.register(name=file, filename=file, makefile=makefile.filename())
 
     arguments = {
         'destination': object_target,
@@ -313,7 +313,7 @@ def LinkUnittest(destination, objects, libs):
     make_clean_target([executable_target], makefile)
 
     test_executable_target = model.register(
-        "test-" + destination, destination, makefile=makefile.filename()
+        full_executable_name, full_executable_name, makefile=makefile.filename(), action="test"
     ).add_recipe(
         Recipe(
             recipe.test,
@@ -342,13 +342,13 @@ def Install(source, path):
     for item in source:
         if isinstance(item, tuple):
             install_file_target = model.register(
-                'install_' + item[0], makefile=makefile.filename())
+                absolute_path( item[0], makefile.filename()), makefile=makefile.filename(), action="install")
             dependency_target = model.get(item[0])
             if not dependency_target:
                 filename = os.path.abspath(os.path.dirname(
                     makefile.filename()) + '/' + item[0])
                 dependency_target = model.register(
-                    item[0], filename, makefile=makefile.filename())
+                    absolute_path( item[0], makefile.filename()), filename, makefile=makefile.filename(), action="install")
             install_file_target.add_dependency(
                 dependency_target).execute(True).serial(True)
             arguments = {
@@ -359,7 +359,7 @@ def Install(source, path):
             install_target.add_dependency(install_file_target)
         elif isinstance(item, model.Target):
             install_file_target = model.register(
-                'install_' + item.name(), makefile=makefile.filename())
+                absolute_path( item.name(), makefile.filename()), filename=item.filename(), makefile=makefile.filename(), action="install")
             dependency_target = item
             install_file_target.add_dependency(
                 dependency_target).execute(True).serial(True)
@@ -371,13 +371,13 @@ def Install(source, path):
             install_target.add_dependency(install_file_target)
         else:
             install_file_target = model.register(
-                'install_' + item, makefile=makefile.filename())
+                absolute_path( item, makefile.filename()), makefile=makefile.filename(), action="install")
             dependency_target = model.get(item)
             if not dependency_target:
                 filename = os.path.abspath(os.path.dirname(
                     makefile.filename()) + '/' + item)
                 dependency_target = model.register(
-                    item, filename, makefile=makefile.filename())
+                    absolute_path( item, makefile.filename()), filename, makefile=makefile.filename(), action="install")
             install_file_target.add_dependency(
                 dependency_target).execute(True).serial(True)
             arguments = {

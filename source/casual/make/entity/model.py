@@ -46,10 +46,14 @@ class Store(object):
                 return self.m_target_cache[name][f]
         return None
 
-    def register(self, name, filename=None, makefile=None):
+    def register(self, name, filename=None, makefile=None, action = None):
         """
         Create and register target in model
         """
+
+        if action:
+            name = action + "+" + name
+
         if isinstance(name, Target):
             target = self.get(name.name(), name.filename())
             if target:
@@ -57,6 +61,7 @@ class Store(object):
             self.m_target_cache[name.name()][name.filename()] = name
             return name
         else:
+
             target = self.get(name, filename)
             if target:
                 return target
@@ -72,11 +77,11 @@ class Store(object):
 store = Store()
 
 
-def register(name, filename=None, makefile=None):
+def register(name, filename=None, makefile=None, action = None):
 
     if not name:
         raise SyntaxError("Can't create target from None values")
-    return store.register(name, filename, makefile)
+    return store.register(name, filename, makefile, action)
 
 
 def get(name, filename=None, paths=None):
