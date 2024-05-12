@@ -20,6 +20,10 @@ def main():
 
     state.environment(args)
 
+    if args.list_default_configuration:
+        state.dump_configuration()
+        raise SystemExit(1)
+
     selected = args.target
 
     try:
@@ -49,6 +53,7 @@ def main():
         if args.list_targets:
             model.list_targets()
             raise SystemExit(1)
+
 
         total_handled = 0
         number_of_actions = 0

@@ -44,6 +44,9 @@ def handle_arguments(arguments = None):
     parser.add_argument(
         "--list-targets", help="print all targets in model", action="store_true")
     parser.add_argument(
+        "--list-default-configuration", help="dumps all configuration", action="store_true")
+
+    parser.add_argument(
         "extra_args", help="argument passed to action", nargs=argparse.REMAINDER)
     args = parser.parse_args(arguments)
 

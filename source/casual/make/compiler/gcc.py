@@ -46,12 +46,12 @@ OPTIONAL_POSSIBLE_FLAGS = common.optional_possible_flags()
 GENERAL_LINK_DIRECTIVE = ["-fPIC"]
 
 
-def compile_directives(type_of_build, warning_directive):
+def compile_directives(type_of_build, warning_directive, system = platform.system()):
     configuration = VERSION_DIRECTIVE + GITHASH_DIRECTIVE + warning_directive + \
         STD_DIRECTIVE + OPTIONAL_FLAGS + OPTIONAL_POSSIBLE_FLAGS
 
     if type_of_build in ['debug', 'analyze']:
-        configuration += ["-ggdb", "-c", "-fPIC"] if platform.system() == 'Darwin' else [
+        configuration += ["-ggdb", "-c", "-fPIC"] if system == 'Darwin' else [
             "-ggdb", "-c", "-fPIC"]
 
         if type_of_build == 'analyze':
@@ -62,55 +62,58 @@ def compile_directives(type_of_build, warning_directive):
     return configuration
 
 
-def link_directives_lib(type_of_build, warning_directive):
+def link_directives_lib(type_of_build, warning_directive, system = platform.system()):
 
     configuration = GENERAL_LINK_DIRECTIVE + warning_directive + STD_DIRECTIVE
 
     if type_of_build in ['debug', 'analyze']:
-        configuration += ["-ggdb", "-dynamiclib"] if platform.system(
-        ) == 'Darwin' else ["-g", "-pthread", "-shared", "-fpic"]
+        configuration += ["-ggdb", "-dynamiclib"] if system == 'Darwin' else ["-g", "-pthread", "-shared", "-fpic"]
 
         if type_of_build == 'analyze':
-            configuration += ["-fprofile-arcs"] if platform.system() == 'Darwin' else [
+            configuration += ["-fprofile-arcs"] if system == 'Darwin' else [
                 "-O0", "-coverage"]
     else:
-        configuration += ["-dynamiclib", "-O3"] if platform.system() == 'Darwin' else [
+        configuration += ["-dynamiclib", "-O3"] if system == 'Darwin' else [
             "-pthread", "-shared", "-O3", "-fpic"]
 
     return configuration
 
 
-def link_directives_exe(type_of_build, warning_directive):
+def link_directives_exe(type_of_build, warning_directive, system = platform.system()):
 
     configuration = GENERAL_LINK_DIRECTIVE + warning_directive + STD_DIRECTIVE
 
     if type_of_build in ['debug', 'analyze']:
-        configuration += ["-ggdb"] if platform.system() == 'Darwin' else ["-g","-pthread", "-fpic"]
+        configuration += ["-ggdb"] if system == 'Darwin' else ["-g","-pthread", "-fpic"]
 
         if type_of_build == 'analyze':
-            configuration += ["-lgcov", "-fprofile-arcs"] if platform.system() == 'Darwin' else [
+            configuration += ["-lgcov", "-fprofile-arcs"] if system == 'Darwin' else [
                 "-O0", "-coverage"]
     else:
-        configuration += ["-O3"] if platform.system() == 'Darwin' else [
+        configuration += ["-O3"] if system == 'Darwin' else [
             "-pthread", "-O3", "-fpic"]
 
     return configuration
 
 
-def link_directives_archive(type_of_build, warning_directive):
+def link_directives_archive(type_of_build, warning_directive, system = platform.system()):
 
     configuration = GENERAL_LINK_DIRECTIVE + warning_directive + STD_DIRECTIVE
 
     if type_of_build in ['debug', 'analyze']:
-        configuration = ["-ggdb"] if platform.system() == 'Darwin' else ["-g"]
+        configuration = ["-ggdb"] if system == 'Darwin' else ["-g"]
     else:
         configuration = [
-            "-O3", "-pthread"] if platform.system() == 'Darwin' else []
+            "-O3", "-pthread"] if system == 'Darwin' else []
 
     return configuration
 
 
-def build_configuration( type_of_build="normal", warning_directive=warning_directive()):
+def build_configuration( type_of_build="normal", warning_directive=warning_directive(), system = platform.system()):
+
+    global STD_DIRECTIVE
+
+    STD_DIRECTIVE = common.cpp_standard(system)
 
     configuration = {
         "compiler": COMPILER,
@@ -120,15 +123,18 @@ def build_configuration( type_of_build="normal", warning_directive=warning_direc
         "archive_linker": ARCHIVE_LINKER,
     }
 
-    configuration["compile_directives"] = compile_directives(type_of_build, warning_directive)
+    configuration["compile_directives"] = compile_directives(type_of_build, warning_directive, system)
     configuration["link_directives_lib"] = link_directives_lib(
         type_of_build,
-        warning_directive)
+        warning_directive,
+        system)
     configuration["link_directives_exe"] = link_directives_exe(
         type_of_build,
-        warning_directive)
+        warning_directive,
+        system)
     configuration["link_directives_archive"] = link_directives_archive(
         type_of_build,
-        warning_directive)
+        warning_directive,
+        system)
 
     return configuration

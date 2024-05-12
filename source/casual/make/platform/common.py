@@ -85,8 +85,8 @@ def archive_linker():
     return ["ar", "rcs"]
 
 
-def cpp_standard():
-    if platform.system().startswith('CYGWIN'):
+def cpp_standard(system = platform.system()):
+    if system.startswith('CYGWIN'):
         return ["-std=gnu++23"]
     else:
         return ["-std=c++2b"]

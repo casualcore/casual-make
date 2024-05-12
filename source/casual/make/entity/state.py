@@ -118,17 +118,23 @@ def environment(args):
         settings.model["verbose"] = True
 
     if not env.get("CASUAL_MAKE_SOURCE_ROOT"):
+        gitpath = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"]).rstrip().decode()
+
         # setup environment
         import importlib
         compiler_handler_module = importlib.import_module(
             settings.compiler_handler_module())
-        gitpath = subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"]).rstrip().decode()
         normalized_path = compiler_handler_module.normalize_paths(gitpath)
         settings.model["source_root"] = normalized_path
-        env.set("CASUAL_MAKE_SOURCE_ROOT", settings.source_root())
+        env.set("CASUAL_MAKE_SOURCE_ROOT", normalized_path)
     else:
         settings.model["source_root"] = env.get("CASUAL_MAKE_SOURCE_ROOT")
 
+
     # serialize to setting to environment variable to be able to use spawn
     settings.serialize()
+
+def dump_configuration():
+    import casual.make.platform.selector as selector
+    return selector.dump_configuration()
