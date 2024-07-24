@@ -120,6 +120,9 @@ def build_configuration( type_of_build="normal", warning_directive=warning_direc
         "archive_linker": ARCHIVE_LINKER,
     }
 
+    if platform.system() != 'Darwin':
+        warning_directive += ['-Wno-dangling-reference']
+
     configuration["compile_directives"] = compile_directives(type_of_build, warning_directive)
     configuration["link_directives_lib"] = link_directives_lib(
         type_of_build,
