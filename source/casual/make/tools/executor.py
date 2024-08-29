@@ -88,6 +88,35 @@ def execute(command, show_command=True, show_output=True, env=None):
             output.error(ex.stderr.decode(), header=True)
         raise SystemError("aborting due to errors")
 
+def execute_result_to_file( command, directory=None, file=None, env=None):
+
+    try:
+
+        def to_file( filename, result):
+            if result:
+                with open( filename, "w") as f:
+                    f.write( result.stdout.decode())
+
+        if env:
+            # append to global env
+            env = dict(os.environ, **env)
+
+        result = None
+
+        if directory:
+            with cd(directory):
+                result = subprocess.run(command, capture_output=True)
+                to_file(file, result)
+        else:
+            result = subprocess.run(command, capture_output=True)
+            to_file(file, result)
+
+
+    except subprocess.CalledProcessError as ex:
+        if ex.stderr:
+            output.error(ex.stderr.decode(), header=True)
+        raise SystemError("aborting due to errors")   
+
 
 def command(cmd, name=None, directory=None, show_command=True, show_output=True, env=None):
 
