@@ -19,7 +19,8 @@ def warning_directive():
             "-Wno-unused-parameter",
             "-Wno-missing-declarations",
             "-Wno-noexcept-type",
-            "-Wno-implicit-fallthrough"
+            "-Wno-implicit-fallthrough",
+            "-Wno-missing-field-initializers"
             ]
 
 
