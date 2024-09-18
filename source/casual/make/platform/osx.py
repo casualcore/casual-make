@@ -47,7 +47,7 @@ def normalize_paths(paths):
 
 def execute_compile(source, destination, context_directory, paths, directive):
 
-    cmd = build_configuration['compiler'] + build_configuration['compile_directives'] + [
+    cmd = build_configuration['compiler'] + build_configuration['compile_directives'] + directive + [
         '-o', destination.filename(), source.filename()] + common.add_item_to_list(escape_space(paths), '-I')
     executor.command(cmd, destination, context_directory)
 
