@@ -15,8 +15,8 @@ def importCode(file, filename, name, add_to_sys_modules=0):
        by dynamically importing the given code and optionally adds it
        to sys.modules under the given name.
     """
-    import imp
-    module = imp.new_module(name)
+    import types
+    module = types.ModuleType(name)
 
     if add_to_sys_modules:
         import sys
