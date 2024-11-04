@@ -1,8 +1,7 @@
 import pprint
 
-import distutils.file_util
-
 import os
+import shutil
 import time
 import sys
 
@@ -160,6 +159,15 @@ def test(input):
 
 
 def install(input):
+    def copy_file(src, dst):
+        dst_filepath = dst + os.path.basename(src)
+        if os.path.exists(dst_filepath):
+            if os.path.getmtime(dst_filepath) >= os.path.getmtime(src):
+                return (dst_filepath, False)
+        
+        filename = shutil.copy2(src, dst)
+        return (filename, True)
+    
     source = input['source']
     if isinstance(source, str):
         pass
@@ -173,12 +181,10 @@ def install(input):
         path += '/'
     if not state.settings.dry_run():
         try:
-            (filename, copied) = distutils.file_util.copy_file(
-                source, path, update=1, verbose=0)
+            (filename, copied) = copy_file(source, path)
         except:
             os.makedirs(path)
-            (filename, copied) = distutils.file_util.copy_file(
-                source, path, update=1, verbose=0)
+            (filename, copied) = copy_file(source, path)
 
         if copied:
             sys.stdout.write(output.reformat(
