@@ -119,11 +119,11 @@ def environment(args):
 
     if not env.get("CASUAL_MAKE_SOURCE_ROOT"):
         # setup environment
+        gitpath = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"]).rstrip().decode()
         import importlib
         compiler_handler_module = importlib.import_module(
             settings.compiler_handler_module())
-        gitpath = subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"]).rstrip().decode()
         normalized_path = compiler_handler_module.normalize_paths(gitpath)
         settings.model["source_root"] = normalized_path
         env.set("CASUAL_MAKE_SOURCE_ROOT", settings.source_root())
