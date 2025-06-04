@@ -1,4 +1,7 @@
 import os
+from enum import Enum
+import casual.make.entity.state as state
+
 
 targetid = 0
 
@@ -6,6 +9,7 @@ def nextid():
     global targetid
     targetid = targetid + 1
     return targetid
+
 
 class Recipe(object):
     def __init__(self, function, arguments):
@@ -15,10 +19,10 @@ class Recipe(object):
     def arguments(self):
         return self._arguments
 
-
 class Target(object):
-    def __init__(self, name, filename=None, makefile=None):
+    def __init__(self, name, filename=None, linkname=None, makefile=None):
         self._name = name
+        self._linkname = linkname
         self._makefile = None
         self._execute = False
         self._serial = False
@@ -35,10 +39,7 @@ class Target(object):
             self._makefile = os.path.abspath(makefile)
 
         if filename:
-            if not os.path.isabs(filename):
-                self._filename = os.path.abspath(directory + '/' + filename)
-            else:
-                self._filename = filename
+            self._filename = filename
 
         if self._filename:
             if os.path.exists(self._filename):
@@ -49,6 +50,7 @@ class Target(object):
         else:
             self._timestamp = 0
 
+        #print(f"filename={self._filename}, name={self._name}, timestamp={self._timestamp}")
         self.hash = hash((self._name, self._filename, self._makefile))
 
     def name(self, name=None):
@@ -96,6 +98,13 @@ class Target(object):
 
         self._filename = filename
         return self._filename
+    
+    def linkname(self, linkname=None):
+        if not linkname:
+            return self._linkname
+
+        self._linkname = linkname
+        return self._linkname
 
     def timestamp(self, timestamp=None):
         if not timestamp:

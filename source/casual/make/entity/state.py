@@ -1,4 +1,5 @@
 import argparse
+import os
 import platform
 import subprocess
 import json
@@ -47,6 +48,8 @@ class Settings(object):
     def ignore_errors(self): return self.model["ignore_errors"]
     def verbose(self): return self.model["verbose"]
     def source_root(self): return self.model["source_root"]
+    def build_root(self): return self.model["build_root"]
+
 
     # serialize and deserialize to and from environment variable
     def serialize(self):
@@ -129,6 +132,19 @@ def environment(args):
         env.set("CASUAL_MAKE_SOURCE_ROOT", settings.source_root())
     else:
         settings.model["source_root"] = env.get("CASUAL_MAKE_SOURCE_ROOT")
+
+    if not env.get("CASUAL_MAKE_BUILD_ROOT"):
+        if args.build_root == "default":
+            env.set("CASUAL_MAKE_BUILD_ROOT", settings.source_root())
+        else:
+            # check to see if build_root has an acceptable value
+            base = os.path.basename(settings.source_root())
+            if os.path.basename(args.build_root) == os.path.basename(settings.source_root()):
+                env.set("CASUAL_MAKE_BUILD_ROOT", args.build_root)
+            else:
+                env.set("CASUAL_MAKE_BUILD_ROOT", os.path.abspath( os.path.join( args.build_root, base)))
+
+    settings.model["build_root"] = env.get("CASUAL_MAKE_BUILD_ROOT")
 
     # serialize to setting to environment variable to be able to use spawn
     settings.serialize()

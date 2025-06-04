@@ -7,6 +7,7 @@ import sys
 from casual.make.entity.target import Target
 from casual.make.tools.executor import importCode
 import casual.make.entity.state as state
+from casual.make.platform.common import create_absolute_filename, FileType
 
 
 # globals
@@ -34,19 +35,21 @@ class Store(object):
         # First - exact match
         if name and filename and name in self.m_target_cache and filename in self.m_target_cache[name]:
             return self.m_target_cache[name][filename]
-        # Second - match by correct path
+        # second - match via linkname
+
+        # third - match by correct path
         elif paths:
             for path in paths:
                 for fname in self.m_target_cache[name]:
                     if path in fname:
                         return self.m_target_cache[name][fname]
-        # Third - correct name - no other options - pick first
+        # Fourth - correct name - no other options - pick first
         elif name in self.m_target_cache and not filename:
             for f in self.m_target_cache[name]:
                 return self.m_target_cache[name][f]
         return None
 
-    def register(self, name, filename=None, makefile=None):
+    def register(self, name, filename=None, linkname=None, makefile=None):
         """
         Create and register target in model
         """
@@ -55,16 +58,28 @@ class Store(object):
             if target:
                 return target
             self.m_target_cache[name.name()][name.filename()] = name
+            if name.linkname():
+                self.m_target_cache[name.linkname()][name.filename()] = name
             return name
         else:
             target = self.get(name, filename)
             if target:
                 return target
             else:
+                if linkname:
+                    target = self.get(linkname, filename)
+                    if target:
+                        return target
                 if name not in self.m_target_cache:
                     self.m_target_cache[name] = {}
                 self.m_target_cache[name][filename] = Target(
-                    name, filename, makefile)
+                    name, filename, linkname, makefile)
+
+                if linkname:
+                    if linkname not in self.m_target_cache:
+                        self.m_target_cache[linkname] = {}
+                    self.m_target_cache[linkname][filename] = self.m_target_cache[name][filename]
+
                 return self.m_target_cache[name][filename]
 
 
@@ -72,15 +87,15 @@ class Store(object):
 store = Store()
 
 
-def register(name, filename=None, makefile=None):
+def register(name, filename=None, linkname=None, makefile=None):
 
     if not name:
         raise SyntaxError("Can't create target from None values")
-    return store.register(name, filename, makefile)
+    return store.register(name, filename, linkname, makefile)
 
 
 def get(name, filename=None, paths=None):
-    return store.get(name)
+    return store.get(name, None, None)
 
 
 def dump_model():
@@ -117,28 +132,15 @@ def get_value(makefile, key):
         return None
 
 
-def make_absolute_path(paths, directory):
-    """
-    Normalize path in path list
-    """
-    reply = []
-    for path in paths:
-        if os.path.isabs(path):
-            reply.append(path)
-        else:
-            reply.append(os.path.abspath(directory + '/' + path))
-    return reply
-
-
 def include_paths(makefile):
     value = get_value(makefile, 'include_paths')
     return value if value else []
 
 
 def library_paths(makefile):
-    value = get_value(makefile, 'library_paths')
+    paths = get_value(makefile, 'library_paths')
     directory, dummy = os.path.split(makefile)
-    return make_absolute_path(value, directory) if value else []
+    return [create_absolute_filename(path, directory, FileType.DESTINATION) for path in paths]
 
 
 def construct_dependency_tree(target):

@@ -1,4 +1,5 @@
 import platform
+import casual.make.entity.state as state
 
 import casual.make.entity.target as target
 import casual.make.tools.environment as environment
@@ -6,15 +7,43 @@ import casual.make.tools.environment as environment
 import os
 import subprocess
 
+from enum import Enum
 
-def add_item_to_list(items, item):
+class FileType(Enum):
+    SOURCE = 1
+    DESTINATION = 2
+
+class TargetMethod(Enum):
+    NAME = 1
+    FILENAME = 2
+    LINKNAME = 3
+
+def create_absolute_filename( filename, directory, file_type=FileType.SOURCE):
+    if not os.path.isabs(filename):
+        if file_type == FileType.SOURCE:
+            return os.path.normpath( os.path.abspath(directory + '/' + filename))
+        else:
+            rel_path = os.path.relpath( directory, state.settings.source_root())
+            return os.path.normpath( os.path.join( environment.get("CASUAL_MAKE_BUILD_ROOT"), rel_path, filename))
+    else:
+        return os.path.normpath(filename)
+    
+def use_build_directory( directory):
+    return os.path.normpath( os.path.join( environment.get("CASUAL_MAKE_BUILD_ROOT"), os.path.relpath( directory, state.settings.source_root())))
+
+def add_item_to_list(items, item, target_method=TargetMethod.NAME):
     new_list = []
     if not items:
         return new_list
 
     for i in items:
         if isinstance(i, target.Target):
-            new_list.append(item + i.name())
+            if target_method == TargetMethod.FILENAME and i.filename():
+                new_list.append(item + i.filename())
+            elif target_method == TargetMethod.LINKNAME and i.linkname():
+                new_list.append(item + i.linkname())
+            else:
+                new_list.append(item + i.name())
         else:
             new_list.append(item + i)
     return new_list
@@ -25,13 +54,11 @@ def verify_type(name):
         raise SystemError("Can't call this method with " + str(type(name)))
 
 
-def assemble_path(sub_directory, name, main_directory=None, prefix="", suffix=""):
+def assemble_path(filename, prefix="", suffix=""):
 
-    if main_directory:
-        assembled = os.path.join(
-            main_directory, sub_directory, prefix + name + suffix)
-    else:
-        assembled = os.path.join(sub_directory, prefix + name + suffix)
+    directory, file = os.path.split(filename)
+
+    assembled = os.path.join(directory, prefix + file + suffix)
 
     return assembled
 
