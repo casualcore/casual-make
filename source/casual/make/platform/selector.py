@@ -1,45 +1,50 @@
 import casual.make.tools.environment as environment
 import casual.make.entity.state as state
+import casual.make.entity.configuration as configuration
 
-import casual.make.compiler.gcc as gcc
+from dataclasses import asdict
+
 
 import os
 import json
 import sys
 import platform
 
-
 def build_configuration():
 
     # todo: select correct config
 
     compiler = environment.get("CXX") or ["g++"]
-    type_of_build = "normal"
+    profile = "normal"
     if state.settings.debug():
-        type_of_build = "debug"
+        profile = "debug"
     elif state.settings.analyze():
-        type_of_build = "analyze"
+        profile = "analyze"
 
-    build_configuration_path = environment.get(
-        "CASUAL_MAKE_CONFIGURATION_PATH")
+    casual_make_source_root = environment.get("CASUAL_MAKE_SOURCE_ROOT")
+    casual_make_home = environment.get("CASUAL_MAKE_HOME")
+
+    if environment.get("CASUAL_MAKE_CONFIGURATION_PATH"):
+        build_configuration_path = environment.get("CASUAL_MAKE_CONFIGURATION_PATH")
+    elif casual_make_source_root and os.path.exists( os.path.join( casual_make_source_root, ".casual-make", "configuration.json")):
+        build_configuration_path = os.path.join( casual_make_source_root, ".casual-make", "configuration.json")
+    elif casual_make_home and os.path.exists( os.path.join( casual_make_home, "..", ".casual-make", "configuration.json")):
+        build_configuration_path = os.path.join( casual_make_home, "..", ".casual-make", "configuration.json")
 
     if build_configuration_path:
         if os.path.exists(build_configuration_path):
             with open(build_configuration_path, "r") as file:
                 stored_configuration = json.load(file)
 
+            build_configuration = configuration.Configuration( stored_configuration)
             system = platform.system()
-            compiler0 = compiler[0]
-            if system in stored_configuration and \
-               compiler0 in stored_configuration[system] and \
-               type_of_build in stored_configuration[system][compiler0]:
-                return stored_configuration[system][compiler0][type_of_build]
+
+            profile_found = build_configuration.profile_find( system, compiler, profile)
+
+            if profile_found:
+                return profile_found
             else:
                 print(
                     "configuration not containing all data, using default configuration", file=sys.stderr)
-
-    # use default
-    if environment.get("CXX") == 'g++':
-        return gcc.build_configuration(type_of_build)
-
-    return gcc.build_configuration(type_of_build)
+    else:
+        raise SystemError("No viable compiler configuration found!")

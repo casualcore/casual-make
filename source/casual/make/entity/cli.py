@@ -12,6 +12,8 @@ def handle_arguments(arguments = None):
     parser.add_argument(
         "-m", "--makefile", help="makefile to build", default="makefile.cmk")
     parser.add_argument(
+        "-b", "--build-root", help="root directory for builds", default="default")
+    parser.add_argument(
         "-d", "--debug", help="compiling with debug flags", action="store_true")
     parser.add_argument(
         "--use-valgrind", help="use valgrind when compiling", action="store_true")

@@ -8,6 +8,7 @@ import casual.make.entity.state as state
 import casual.make.tools.environment as environment
 
 from casual.make.entity.target import Target, Recipe
+from casual.make.platform.common import create_absolute_filename, FileType
 from casual.make.tools.executor import importCode
 
 import importlib
@@ -67,7 +68,6 @@ def normalize_library_target(libs, paths=None):
 
 
 def includes(dependency_file, makefile):
-
     context_directory, dummy = os.path.split(makefile)
     if os.path.exists(dependency_file):
         with open(dependency_file) as file:
@@ -96,7 +96,7 @@ def make_clean_target(targets, makefile):
     for target in targets:
         clean_target.add_dependency(
             model.register(
-                'clean_' + target.name(), makefile=makefile.filename())
+                'clean-' + target.filename(), filename=target.filename(), makefile=makefile.filename())
             .add_recipe(
                 Recipe(recipe.clean, {'filename': target, 'makefile': makefile.filename()}))
             .execute(True)
@@ -114,6 +114,17 @@ def source_root():
 
     if state.settings.verbose():
         print("\nCASUAL_MAKE_SOURCE_ROOT is not set")
+
+    return ""
+
+def build_root():
+    value = state.settings.build_root()
+
+    if value:
+        return value
+
+    if state.settings.verbose():
+        print("\nCASUAL_MAKE_BUILD_ROOT is not set")
 
     return ""
 
@@ -150,16 +161,17 @@ def Compile(sourcefile, objectfile=None, directive=[]):
     """
     makefile = caller()
 
+    directory, dummy = os.path.split(makefile.filename())
+
     if not objectfile:
-        objectfile = selector.make_objectname(sourcefile)
+        objectfile = create_absolute_filename( selector.make_objectname(sourcefile), directory, FileType.DESTINATION)
 
     dependencyfile = selector.make_dependencyfilename(objectfile)
-    dependencyfile_target = model.register(name=dependencyfile, filename=absolute_path(
-        dependencyfile, makefile.filename()), makefile=makefile.filename())
+    dependencyfile_target = model.register(name='dependency-' + dependencyfile, filename=dependencyfile, makefile=makefile.filename())
     object_dependencies = includes(
         dependencyfile_target.filename(), makefile=makefile.filename())
-    source_target = model.register(name=sourcefile, filename=absolute_path(
-        sourcefile, makefile.filename()), makefile=makefile.filename())
+    sourcefile = create_absolute_filename( sourcefile, directory)
+    source_target = model.register(name='source-' + sourcefile, filename=sourcefile, makefile=makefile.filename())
 
     dependencyfile_target.add_dependency(source_target)
 
@@ -171,8 +183,7 @@ def Compile(sourcefile, objectfile=None, directive=[]):
     object_dependencies.append(dependencyfile_target)
 
     # register the objectfile in module
-    object_target = model.register(name=objectfile, filename=absolute_path(
-        objectfile, makefile.filename()), makefile=makefile.filename())
+    object_target = model.register(name='object-' + objectfile, filename=objectfile, makefile=makefile.filename())
 
     arguments = {
         'destination': object_target,
@@ -203,9 +214,10 @@ def LinkLibrary(destination, objects, libs):
     makefile = caller()
     directory, dummy = os.path.split(makefile.filename())
     name = os.path.basename(destination)
-    full_library_name = selector.expanded_library_name(destination, directory)
+    full_library_name = create_absolute_filename( selector.expanded_library_name(destination), directory, FileType.DESTINATION)
+
     library_target = model.register(
-        name=name, filename=full_library_name, makefile=makefile.filename())
+        name='link-library-' + full_library_name, filename=full_library_name, linkname=name, makefile=makefile.filename())
 
     library_paths = model.library_paths(makefile.filename())
     normalized_library_targets = normalize_library_target(
@@ -237,9 +249,11 @@ def LinkArchive(destination, objects):
     directory, dummy = os.path.split(makefile.filename())
     name = os.path.basename(destination)
 
-    full_archive_name = selector.expanded_archive_name(destination, directory)
+    full_archive_name = create_absolute_filename( selector.expanded_archive_name(destination), directory, FileType.DESTINATION)
+
     archive_target = model.register(
-        name=name, filename=full_archive_name, makefile=makefile.filename())
+        name='link-archive-' + full_archive_name, filename=full_archive_name, linkname=name, makefile=makefile.filename())
+    
     arguments = {
         'destination': archive_target,
         'objects': objects
@@ -261,10 +275,9 @@ def LinkExecutable(destination, objects, libs):
     makefile = caller()
     directory, dummy = os.path.split(makefile.filename())
 
-    full_executable_name = selector.expanded_executable_name(
-        destination, directory)
+    full_executable_name = create_absolute_filename( selector.expanded_executable_name( destination), directory, FileType.DESTINATION)
     executable_target = model.register(
-        full_executable_name, full_executable_name, makefile=makefile.filename())
+        'link-executable-' + full_executable_name, full_executable_name, makefile=makefile.filename())
     library_paths = model.library_paths(makefile.filename())
     normalized_library_targets = normalize_library_target(libs, library_paths)
     arguments = {
@@ -290,10 +303,9 @@ def LinkUnittest(destination, objects, libs):
     makefile = caller()
     directory, dummy = os.path.split(makefile.filename())
 
-    full_executable_name = selector.expanded_executable_name(
-        destination, directory)
+    full_executable_name = create_absolute_filename( selector.expanded_executable_name( destination), directory, FileType.DESTINATION)
     executable_target = model.register(
-        full_executable_name, full_executable_name, makefile=makefile.filename())
+        'link-unittest-' + full_executable_name, full_executable_name, makefile=makefile.filename())
     library_paths = model.library_paths(makefile.filename())
     normalized_library_targets = normalize_library_target(
         libs, library_paths) + normalize_library_target(['gtest', 'gtest_main'])

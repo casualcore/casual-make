@@ -15,17 +15,16 @@ import re
 ######################################################################
 
 
-build_configuration = selector.build_configuration()
+configuration = selector.build_configuration()
 
 
 def library_paths_directive(paths):
-
     return common.add_item_to_list(paths, '-L')
 
 
 def library_directive(libraries):
 
-    return common.add_item_to_list(libraries, '-l')
+    return common.add_item_to_list(libraries, '-l', common.TargetMethod.LINKNAME)
 
 
 def local_library_path(paths=[]):
@@ -37,7 +36,7 @@ def local_library_path(paths=[]):
 
 def escape_space(paths):
 
-    return map(lambda string: string.replace(" ", "\\ "), paths)
+    return list(map(lambda string: string.replace(" ", "\\ "), paths))
 
 
 def normalize_paths(paths):
@@ -47,37 +46,37 @@ def normalize_paths(paths):
 
 def execute_compile(source, destination, context_directory, paths, directive):
 
-    cmd = build_configuration['compiler'] + build_configuration['compile_directives'] + directive + [
+    cmd = configuration.compile.command + configuration.cpp_standard.directive + configuration.compile.directive + \
+        configuration.compile.warning.directive + common.casual_build_version() + common.casual_build_commit_hash() + \
+        common.optional_flags() + common.optional_possible_flags() + directive + [
         '-o', destination.filename(), source.filename()] + common.add_item_to_list(escape_space(paths), '-I')
     executor.command(cmd, destination, context_directory)
 
 
 def execute_dependency_generation(source, destination, context_directory, paths, dependency_file):
 
-    cmd = build_configuration['header_dependency_command'] + [source.filename(
+    cmd = configuration.dependency.command + configuration.dependency.directive + configuration.cpp_standard.directive + [source.filename(
     )] + common.add_item_to_list(escape_space(paths), '-I') + ['-MF', dependency_file]
-    executor.command(cmd, destination, context_directory,
-                     show_command=False, show_output=False)
+    executor.command(cmd, destination, context_directory, show_command=False, show_output=False)
 
 
 def execute_link_library(destination, context_directory, objects, library_paths, libraries):
 
-    cmd = build_configuration['library_linker'] + build_configuration['link_directives_lib'] + ['-o', destination.filename(
-    )] + objects + library_paths_directive(escape_space(library_paths)) + common.add_item_to_list(libraries, '-l')
+    cmd = configuration.link.library.command + configuration.link.library.directive + ['-o', destination.filename(
+    )] + objects + library_paths_directive(escape_space(library_paths)) + common.add_item_to_list(libraries, '-l', common.TargetMethod.LINKNAME)
     executor.command(cmd, destination, context_directory)
 
 
 def execute_link_executable(destination, context_directory, objects, library_paths, libraries):
 
-    cmd = build_configuration['executable_linker'] + build_configuration['link_directives_exe'] + ['-o', destination.filename(
-    )] + objects + library_paths_directive(escape_space(library_paths)) + common.add_item_to_list(libraries, '-l')
+    cmd = configuration.link.executable.command + configuration.link.executable.directive + ['-o', destination.filename(
+    )] + objects + library_paths_directive(escape_space(library_paths)) + common.add_item_to_list(libraries, '-l', common.TargetMethod.LINKNAME)
     executor.command(cmd, destination, context_directory)
 
 
 def execute_link_archive(destination, context_directory, objects):
 
-    cmd = build_configuration['archive_linker'] + \
-        [destination.filename()] + objects
+    cmd = configuration.link.archive.command + configuration.link.archive.directive + [destination.filename()] + objects
     executor.command(cmd, destination, context_directory)
 
 
@@ -91,36 +90,26 @@ def make_dependencyfilename(name):
     return name.replace('.o', '.d')
 
 
-def expanded_library_name(name, directory=None):
+def expanded_library_name(name):
 
     common.verify_type(name)
 
-    directory_part, file = os.path.split(name)
+    assembled = common.assemble_path( name, 'lib', '.so')
 
-    assembled = common.assemble_path(
-        directory_part, file, directory, 'lib', '.so')
-
-    return os.path.abspath(assembled)
+    return assembled
 
 
-def expanded_archive_name(name, directory=None):
+def expanded_archive_name(name):
 
     common.verify_type(name)
 
-    directory_part, file = os.path.split(name)
+    assembled = common.assemble_path( name, 'lib', '.a')
 
-    assembled = common.assemble_path(
-        directory_part, file, directory, 'lib', '.a')
-
-    return os.path.abspath(assembled)
+    return assembled
 
 
-def expanded_executable_name(name, directory=None):
+def expanded_executable_name(name):
 
     common.verify_type(name)
 
-    directory_part, file = os.path.split(name)
-
-    assembled = common.assemble_path(directory_part, file, directory)
-
-    return os.path.abspath(assembled)
+    return name
