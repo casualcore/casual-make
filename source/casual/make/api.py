@@ -14,6 +14,8 @@ import importlib
 compiler_handler_module = state.settings.compiler_handler_module()
 selector = importlib.import_module(compiler_handler_module)
 
+from pathlib import Path
+
 #
 # global setup for operations
 #
@@ -47,12 +49,41 @@ def caller():
     return model.register(name=path, filename=path, makefile=path)
 
 
-def absolute_path(filename, makefile):
+def make_build_absolute_path(filename, makefile = None):
+
+    root = build_root()
+
+    if makefile:
+        relativ_sokvag = Path(makefile).relative_to(Path(source_root()))
+        path = absolute_path( filename, relativ_sokvag, root)
+
+    elif os.path.isabs( filename):
+        relativ_sokvag = Path(filename).relative_to(Path(source_root()))
+        path = os.path.join(root, relativ_sokvag)    
+    else:
+        raise SystemError("This should never happen")
+
+    return path
+
+def make_source_absolute_path(filename, makefile):
+
+    root = source_root()
+
+    return absolute_path( filename, makefile, root)
+
+
+def absolute_path(filename, makefile, root = None):
 
     if os.path.isabs(filename):
         return filename
+
     directory, dummy = os.path.split(makefile)
-    assembled = os.path.join(directory, filename)
+
+    if root:
+        assembled = os.path.join(root, directory, filename)
+    else:
+        assembled = os.path.join(directory, filename)
+
     return os.path.abspath(assembled)
 
 
@@ -117,6 +148,17 @@ def source_root():
 
     return ""
 
+def build_root():
+    value = state.settings.build_root()
+
+    if value:
+        return value
+
+    if state.settings.verbose():
+        print("\nCASUAL_MAKE_BUILD_ROOT is not set")
+
+    return ""
+
 
 def optional_include_paths():
     value = environment.get("CASUAL_MAKE_OPTIONAL_INCLUDE_PATHS")
@@ -139,6 +181,29 @@ def optional_library_paths():
 
     return []
 
+def make_absolute_path(paths, makefile):
+    """
+    Normalize path in path list
+    """
+    reply = []
+    for path in paths:
+        if os.path.isabs(path):
+            reply.append(path)
+        else:
+            reply.append(make_build_absolute_path(path, makefile))
+    return reply
+
+
+def get_include_paths(makefile):
+    value = model.get_value(makefile, 'include_paths')
+    return value if value else []
+
+
+def get_library_paths(makefile):
+    value = model.get_value(makefile, 'library_paths')
+    return make_absolute_path(value, makefile) if value else []
+
+
 #
 # Main DSL
 #
@@ -154,11 +219,11 @@ def Compile(sourcefile, objectfile=None, directive=[]):
         objectfile = selector.make_objectname(sourcefile)
 
     dependencyfile = selector.make_dependencyfilename(objectfile)
-    dependencyfile_target = model.register(name=dependencyfile, filename=absolute_path(
-        dependencyfile, makefile.filename()), makefile=makefile.filename())
+    fulldependencyfile = make_build_absolute_path(dependencyfile, makefile.filename())
+    dependencyfile_target = model.register(name=dependencyfile, filename=fulldependencyfile, makefile=makefile.filename())
     object_dependencies = includes(
         dependencyfile_target.filename(), makefile=makefile.filename())
-    source_target = model.register(name=sourcefile, filename=absolute_path(
+    source_target = model.register(name=sourcefile, filename=make_source_absolute_path(
         sourcefile, makefile.filename()), makefile=makefile.filename())
 
     dependencyfile_target.add_dependency(source_target)
@@ -171,14 +236,14 @@ def Compile(sourcefile, objectfile=None, directive=[]):
     object_dependencies.append(dependencyfile_target)
 
     # register the objectfile in module
-    object_target = model.register(name=objectfile, filename=absolute_path(
+    object_target = model.register(name=objectfile, filename=make_build_absolute_path(
         objectfile, makefile.filename()), makefile=makefile.filename())
 
     arguments = {
         'destination': object_target,
-        'dependencyfile':  dependencyfile,
+        'dependencyfile':  fulldependencyfile,
         'source': source_target,
-        'include_paths': model.include_paths(makefile.filename()),
+        'include_paths': get_include_paths(makefile.filename()),
         'directive': directive
     }
 
@@ -203,11 +268,11 @@ def LinkLibrary(destination, objects, libs):
     makefile = caller()
     directory, dummy = os.path.split(makefile.filename())
     name = os.path.basename(destination)
-    full_library_name = selector.expanded_library_name(destination, directory)
+    full_library_name = make_build_absolute_path(selector.expanded_library_name(destination, directory))
     library_target = model.register(
         name=name, filename=full_library_name, makefile=makefile.filename())
 
-    library_paths = model.library_paths(makefile.filename())
+    library_paths = get_library_paths(makefile.filename())
     normalized_library_targets = normalize_library_target(
         libs, paths=library_paths)
     arguments = {
@@ -237,7 +302,7 @@ def LinkArchive(destination, objects):
     directory, dummy = os.path.split(makefile.filename())
     name = os.path.basename(destination)
 
-    full_archive_name = selector.expanded_archive_name(destination, directory)
+    full_archive_name = make_build_absolute_path( selector.expanded_archive_name(destination, directory))
     archive_target = model.register(
         name=name, filename=full_archive_name, makefile=makefile.filename())
     arguments = {
@@ -261,11 +326,11 @@ def LinkExecutable(destination, objects, libs):
     makefile = caller()
     directory, dummy = os.path.split(makefile.filename())
 
-    full_executable_name = selector.expanded_executable_name(
-        destination, directory)
+    full_executable_name = make_build_absolute_path( selector.expanded_executable_name(
+        destination, directory))
     executable_target = model.register(
         full_executable_name, full_executable_name, makefile=makefile.filename())
-    library_paths = model.library_paths(makefile.filename())
+    library_paths = get_library_paths(makefile.filename())
     normalized_library_targets = normalize_library_target(libs, library_paths)
     arguments = {
         'destination': executable_target,
@@ -290,11 +355,11 @@ def LinkUnittest(destination, objects, libs):
     makefile = caller()
     directory, dummy = os.path.split(makefile.filename())
 
-    full_executable_name = selector.expanded_executable_name(
-        destination, directory)
+    full_executable_name = make_build_absolute_path(selector.expanded_executable_name(
+        destination, directory))
     executable_target = model.register(
         full_executable_name, full_executable_name, makefile=makefile.filename())
-    library_paths = model.library_paths(makefile.filename())
+    library_paths = get_library_paths(makefile.filename())
     normalized_library_targets = normalize_library_target(
         libs, library_paths) + normalize_library_target(['gtest', 'gtest_main'])
     arguments = {

@@ -27,6 +27,8 @@ class Settings(object):
         self.model["ignore_errors"] = False
         self.model["verbose"] = False
         self.model["source_root"] = None
+        self.model["build_root"] = None
+
 
         # remove when backward compatibility is not needed.
         self.compiler_handler = None
@@ -47,6 +49,8 @@ class Settings(object):
     def ignore_errors(self): return self.model["ignore_errors"]
     def verbose(self): return self.model["verbose"]
     def source_root(self): return self.model["source_root"]
+    def build_root(self): return self.model["build_root"]
+
 
     # serialize and deserialize to and from environment variable
     def serialize(self):
@@ -129,6 +133,13 @@ def environment(args):
         env.set("CASUAL_MAKE_SOURCE_ROOT", settings.source_root())
     else:
         settings.model["source_root"] = env.get("CASUAL_MAKE_SOURCE_ROOT")
+
+    if not env.get("CASUAL_MAKE_BUILD_ROOT"):
+        env.set("CASUAL_MAKE_BUILD_ROOT", settings.source_root())
+    else:
+        settings.model["build_root"] = env.get("CASUAL_MAKE_BUILD_ROOT")
+
+
 
     # serialize to setting to environment variable to be able to use spawn
     settings.serialize()
