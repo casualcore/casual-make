@@ -116,31 +116,6 @@ def get_value(makefile, key):
     else:
         return None
 
-
-def make_absolute_path(paths, directory):
-    """
-    Normalize path in path list
-    """
-    reply = []
-    for path in paths:
-        if os.path.isabs(path):
-            reply.append(path)
-        else:
-            reply.append(os.path.abspath(directory + '/' + path))
-    return reply
-
-
-def include_paths(makefile):
-    value = get_value(makefile, 'include_paths')
-    return value if value else []
-
-
-def library_paths(makefile):
-    value = get_value(makefile, 'library_paths')
-    directory, dummy = os.path.split(makefile)
-    return make_absolute_path(value, directory) if value else []
-
-
 def construct_dependency_tree(target):
     """
     Construcs a depedency tree in the view of the target_rhs
