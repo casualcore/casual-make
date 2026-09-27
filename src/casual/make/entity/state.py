@@ -136,10 +136,9 @@ def environment(args):
 
     if not env.get("CASUAL_MAKE_BUILD_ROOT"):
         env.set("CASUAL_MAKE_BUILD_ROOT", settings.source_root())
+        settings.model["build_root"] = env.get("CASUAL_MAKE_BUILD_ROOT")
     else:
         settings.model["build_root"] = env.get("CASUAL_MAKE_BUILD_ROOT")
-
-
 
     # serialize to setting to environment variable to be able to use spawn
     settings.serialize()

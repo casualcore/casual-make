@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "casual-make-core"
+version = "1.9.0"
+description = "Corefunctionality for the buildsystem for casual"
+readme = "readme.md"
+authors = [
+    { name = "casual", email = "casual@laz.se" }
+]
+requires-python = ">=3.8"
+dependencies = [
+]
+
+[project.urls]
+Homepage = "https://github.com/casualcore/casual-make"
+
+[project.scripts]
+casual-make = "casual.run:main"
+cmk = "casual.run:main"
