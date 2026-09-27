@@ -486,6 +486,13 @@ def Dependencies(target, dependencies):
         raise SystemError("dependencies is " +
                           str(dependencies) + " must be a list")
 
+    for i, dependency in enumerate(dependencies):
+        if not isinstance(dependency, Target):
+            if found := model.get(dependency):
+                dependencies[i] = found
+            else:
+                raise SystemError("No such target: " + dependency)
+
     target.add_dependency(dependencies)
 
 

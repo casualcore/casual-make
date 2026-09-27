@@ -1,21 +1,13 @@
 import os
+from casual.make.platform.common import configuration
 import casual.make.platform.common as common
 import casual.make.platform.selector as selector
 import casual.make.tools.executor as executor
 import casual.make.tools.environment as environment
 import casual.make.entity.state as state
+
 import sys
 import re
-
-
-def compose_paths(*args):
-    paths = ''
-    root_path = state.settings.source_root()
-    for arg in args:
-        path = os.path.join(root_path, arg)
-        paths += executor.execute_raw(['cygpath', path]).decode() + ':'
-    reply = paths[:-1]
-    return reply
 
 
 ######################################################################
@@ -24,11 +16,18 @@ def compose_paths(*args):
 ##
 ######################################################################
 
-
 build_configuration = selector.build_configuration()
 
+#
+# VALGRIND
+#
+if state.settings.use_valgrind():
+    PRE_UNITTEST_DIRECTIVE = "valgrind --xml=yes --xml-file=valgrind.xml".split()
 
-LIBRARY_PATH_OPTION = "-Wl,-rpath-link="
+#
+# Format the include-/library- paths
+#
+LIBRARY_PATH_OPTION = "-Wl,-rpath,'$ORIGIN/../lib' -Wl,-rpath-link="
 
 
 def library_paths_directive(paths):
@@ -42,19 +41,15 @@ def library_directive(libraries):
 
 
 def local_library_path(paths=[]):
+    ld_library_path = environment.get('LD_LIBRARY_PATH','')
+    return {'LD_LIBRARY_PATH': 
+        ld_library_path + ":" + ":".join(paths)
+        }
 
-    path_to_add = re.sub("\s", ":", environment.get('CASUAL_OPTIONAL_LIBRARY_PATHS', '')) + \
-        ':' + compose_paths('middleware/common/bin', 'middleware/configuration/bin')
 
-    reply = {
-        'PATH': path_to_add + ':' + environment.get('PATH', '')
-    }
+def normalize_paths(paths):
 
-    if paths:
-        extra_path = compose_paths(*paths)
-        reply['PATH'] = extra_path + ':' + reply['PATH']
-
-    return reply
+    return paths
 
 
 def escape_space(paths):
@@ -62,51 +57,38 @@ def escape_space(paths):
     return map(lambda string: string.replace(" ", "\\ "), paths)
 
 
-def normalize_paths(paths):
-
-    if isinstance(paths, list):
-        normalized = []
-        for path in paths:
-            normalized.append(executor.execute_raw(['cygpath', path]).decode())
-        return normalized
-    elif isinstance(paths, str):
-        return executor.execute_raw(['cygpath', paths]).decode()
-    else:
-        raise SystemError("Error normlizing path: ", paths)
-
-
 def execute_compile(source, destination, context_directory, paths, directive):
 
-    cmd = build_configuration['compiler'] + build_configuration['compile_directives'] + [
+    cmd = configuration.instance()['compiler'] + configuration.instance()['common_compile_flags'] + configuration.instance()['compile_extra']+ directive + [
         '-o', destination.filename(), source.filename()] + common.add_item_to_list(escape_space(paths), '-I')
     executor.command(cmd, destination, context_directory)
 
 
 def execute_dependency_generation(source, destination, context_directory, paths, dependency_file):
 
-    cmd = build_configuration['header_dependency_command'] + [source.filename(
+    cmd = configuration.instance()['header_dependency_command'] + [source.filename(
     )] + common.add_item_to_list(escape_space(paths), '-I') + ['-MF', dependency_file]
     executor.command(cmd, destination, context_directory,
-                     show_command=True, show_output=False)
+                     show_command=False, show_output=False)
 
 
 def execute_link_library(destination, context_directory, objects, library_paths, libraries):
 
-    cmd = build_configuration['library_linker'] + build_configuration['link_directives_lib'] + ['-o', destination.filename(
-    )] + objects + library_paths_directive(escape_space(library_paths)) + common.add_item_to_list(libraries, '-l')
+    cmd = configuration.instance()['library_linker'] + configuration.instance()['common_link_flags'] + configuration.instance()['link_extra_lib'] + ['-o', destination.filename(
+    )] + objects + library_paths_directive(library_paths) + common.add_item_to_list(libraries, '-l')
     executor.command(cmd, destination, context_directory)
 
 
 def execute_link_executable(destination, context_directory, objects, library_paths, libraries):
 
-    cmd = build_configuration['executable_linker'] + build_configuration['link_directives_exe'] + ['-o', destination.filename(
-    )] + objects + library_paths_directive(escape_space(library_paths)) + common.add_item_to_list(libraries, '-l')
+    cmd = configuration.instance()['executable_linker'] + configuration.instance()['common_link_flags'] + configuration.instance()['link_extra_exe'] + ['-o', destination.filename(
+    )] + objects + library_paths_directive(library_paths) + common.add_item_to_list(libraries, '-l')
     executor.command(cmd, destination, context_directory)
 
 
 def execute_link_archive(destination, context_directory, objects):
 
-    cmd = build_configuration['archive_linker'] + \
+    cmd = configuration.instance()['archive_linker'] + \
         [destination.filename()] + objects
     executor.command(cmd, destination, context_directory)
 
@@ -128,7 +110,7 @@ def expanded_library_name(name, directory=None):
     directory_part, file = os.path.split(name)
 
     assembled = common.assemble_path(
-        directory_part, file, directory, 'lib', '.dll')
+        directory_part, file, directory, 'lib', '.so')
 
     return os.path.abspath(assembled)
 
@@ -151,7 +133,6 @@ def expanded_executable_name(name, directory=None):
 
     directory_part, file = os.path.split(name)
 
-    assembled = common.assemble_path(
-        directory_part, file, directory, suffix='.exe')
+    assembled = common.assemble_path(directory_part, file, directory)
 
     return os.path.abspath(assembled)

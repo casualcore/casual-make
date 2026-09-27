@@ -1,6 +1,6 @@
 import os
+from casual.make.platform.common import configuration
 import casual.make.platform.common as common
-import casual.make.platform.selector as selector
 import casual.make.tools.executor as executor
 import casual.make.tools.environment as environment
 
@@ -13,10 +13,6 @@ import re
 # compilation and link configuration
 ##
 ######################################################################
-
-
-build_configuration = selector.build_configuration()
-
 
 def library_paths_directive(paths):
 
@@ -47,14 +43,14 @@ def normalize_paths(paths):
 
 def execute_compile(source, destination, context_directory, paths, directive):
 
-    cmd = build_configuration['compiler'] + build_configuration['compile_directives'] + directive + [
+    cmd = configuration.instance()['compiler'] + configuration.instance()['common_compile_flags'] + configuration.instance()['compile_extra']+ directive + [
         '-o', destination.filename(), source.filename()] + common.add_item_to_list(escape_space(paths), '-I')
     executor.command(cmd, destination, context_directory)
 
 
 def execute_dependency_generation(source, destination, context_directory, paths, dependency_file):
 
-    cmd = build_configuration['header_dependency_command'] + [source.filename(
+    cmd = configuration.instance()['header_dependency_command'] + [source.filename(
     )] + common.add_item_to_list(escape_space(paths), '-I') + ['-MF', dependency_file]
     executor.command(cmd, destination, context_directory,
                      show_command=False, show_output=False)
@@ -62,21 +58,21 @@ def execute_dependency_generation(source, destination, context_directory, paths,
 
 def execute_link_library(destination, context_directory, objects, library_paths, libraries):
 
-    cmd = build_configuration['library_linker'] + build_configuration['link_directives_lib'] + ['-o', destination.filename(
+    cmd = configuration.instance()['library_linker'] + configuration.instance()['common_link_flags'] + configuration.instance()['link_extra_lib'] + ['-o', destination.filename(
     )] + objects + library_paths_directive(escape_space(library_paths)) + common.add_item_to_list(libraries, '-l')
     executor.command(cmd, destination, context_directory)
 
 
 def execute_link_executable(destination, context_directory, objects, library_paths, libraries):
 
-    cmd = build_configuration['executable_linker'] + build_configuration['link_directives_exe'] + ['-o', destination.filename(
+    cmd = configuration.instance()['executable_linker'] + configuration.instance()['common_link_flags'] + configuration.instance()['link_extra_exe'] + ['-o', destination.filename(
     )] + objects + library_paths_directive(escape_space(library_paths)) + common.add_item_to_list(libraries, '-l')
     executor.command(cmd, destination, context_directory)
 
 
 def execute_link_archive(destination, context_directory, objects):
 
-    cmd = build_configuration['archive_linker'] + \
+    cmd = configuration.instance()['archive_linker'] + \
         [destination.filename()] + objects
     executor.command(cmd, destination, context_directory)
 

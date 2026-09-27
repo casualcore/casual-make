@@ -68,6 +68,8 @@ reformat.filters = [
      lambda match: color_module.color.red('processed ' + match.group(1) + ': ', bright=True) + match.group(2)],
     [re.compile(r'^[^ ]*progress: (.*)'),
      lambda match: color_module.color.cyan('progress: ' + match.group(1))],
+    [re.compile(r'^[^ ]*Using build profile found in (.*)'),
+     lambda match: color_module.color.cyan('Build profile: ' + match.group(1))],
 ]
 
 

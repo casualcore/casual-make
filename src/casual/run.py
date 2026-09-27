@@ -7,6 +7,7 @@ import platform
 
 import casual.make.entity.state as state
 import casual.make.entity.cli as cli
+import casual.make.platform.selector as selector
 
 def main():
 
@@ -14,7 +15,7 @@ def main():
 
     # handle simples action first
     if args.version:
-        import casual
+        import casual as casual
         print(casual.__version__)
         raise SystemExit(0)
 
@@ -45,6 +46,9 @@ def main():
         actions = model.construct_action_list(selected_target)
 
         output.print("done")
+
+        if actions:
+            output.print(f"Using build profile found in {selector.build_profile_file()}")
 
         if args.list_targets:
             model.list_targets()

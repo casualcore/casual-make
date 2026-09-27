@@ -13,17 +13,9 @@ def warning_directive():
     return ["-Wall",
             "-Wextra",
             "-Werror",
-            "-Wsign-compare",
-            "-Wuninitialized",
-            "-Winit-self",
             "-Wno-unused-parameter",
-            "-Wno-missing-declarations",
-            "-Wno-noexcept-type",
             "-Wno-implicit-fallthrough",
-            "-Wno-missing-field-initializers",
-            "-Wno-deprecated-declarations",
-            "-Wno-main",
-            "-Wno-unused-variable"
+            "-Wno-missing-field-initializers"
             ]
 
 

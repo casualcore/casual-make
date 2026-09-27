@@ -2,10 +2,21 @@ import platform
 
 import casual.make.entity.target as target
 import casual.make.tools.environment as environment
+import casual.make.platform.selector as selector
 
 import os
 import subprocess
 
+class Configuration(object):
+    def __init__(self):
+        self._config = None
+
+    def instance(self):
+        if self._config == None:
+            self._config = selector.build_configuration()
+        return self._config
+
+configuration = Configuration()
 
 def add_item_to_list(items, item):
     new_list = []
@@ -82,14 +93,15 @@ def executable_linker():
 
 
 def archive_linker():
-    return ["ar", "rcs"]
+    return ["ar", "rcs"] if not environment.get("AR") \
+        else environment.get("AR").split()
 
 
 def cpp_standard():
     if platform.system().startswith('CYGWIN'):
         return ["-std=gnu++23"]
     else:
-        return ["-std=c++2b"]
+        return ["-std=c++23"]
 
 
 def optional_possible_flags():
