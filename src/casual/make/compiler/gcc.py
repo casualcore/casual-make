@@ -13,12 +13,7 @@ def warning_directive():
     return ["-Wall",
             "-Wextra",
             "-Werror",
-            "-Wsign-compare",
-            "-Wuninitialized",
-            "-Winit-self",
             "-Wno-unused-parameter",
-            "-Wno-missing-declarations",
-            "-Wno-noexcept-type",
             "-Wno-implicit-fallthrough",
             "-Wno-missing-field-initializers"
             ]
@@ -122,7 +117,11 @@ def build_configuration( type_of_build="normal", warning_directive=warning_direc
     }
 
     if platform.system() != 'Darwin':
-        warning_directive += ['-Wno-dangling-reference']
+        warning_directive += ['-Wno-dangling-reference','-Wno-address', '-Wno-class-memaccess']
+    else:
+        warning_directive += ['-Wno-deprecated-literal-operator', 
+                              '-Wno-nontrivial-memcall', 
+                              '-Wno-character-conversion']
 
     configuration["compile_directives"] = compile_directives(type_of_build, warning_directive)
     configuration["link_directives_lib"] = link_directives_lib(

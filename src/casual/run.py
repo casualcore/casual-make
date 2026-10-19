@@ -14,7 +14,7 @@ def main():
 
     # handle simples action first
     if args.version:
-        import casual
+        import casual as casual
         print(casual.__version__)
         raise SystemExit(0)
 
