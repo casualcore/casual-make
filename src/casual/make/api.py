@@ -1,16 +1,12 @@
+import importlib
 import inspect
 import os
 
-import casual.make.entity.model as model
-import casual.make.entity.recipe as recipe
-import casual.make.entity.state as state
-
-import casual.make.tools.environment as environment
-
-from casual.make.entity.target import Target, Recipe
+from casual.make.entity import model, recipe, state
+from casual.make.entity.target import Recipe, Target
+from casual.make.tools import environment
 from casual.make.tools.executor import importCode
 
-import importlib
 compiler_handler_module = state.settings.compiler_handler_module()
 selector = importlib.import_module(compiler_handler_module)
 
@@ -19,23 +15,23 @@ from pathlib import Path
 #
 # global setup for operations
 #
-compile_target = model.register('compile')
-link_library_target = model.register('link-library')
-link_archive_target = model.register('link-archive')
-link_executable_target = model.register('link-executable')
-link_unittest_target = model.register('link-unittest')
-link_target = model.register('link').add_dependency(
+compile_target = model.register("compile")
+link_library_target = model.register("link-library")
+link_archive_target = model.register("link-archive")
+link_executable_target = model.register("link-executable")
+link_unittest_target = model.register("link-unittest")
+link_target = model.register("link").add_dependency(
     [
         link_library_target,
         link_archive_target,
         link_executable_target,
-        link_unittest_target
+        link_unittest_target,
     ]
 )
 
-test_target = model.register('test').execute(True).serial(True)
-clean_target = model.register('clean')
-install_target = model.register('install').serial(True)
+test_target = model.register("test").execute(True).serial(True)
+clean_target = model.register("clean")
+install_target = model.register("install").serial(True)
 
 #
 # Helpers
@@ -49,35 +45,36 @@ def caller():
     return model.register(name=path, filename=path, makefile=path)
 
 
-def make_build_absolute_path(filename, makefile = None):
+def make_build_absolute_path(filename, makefile=None):
 
     root = build_root()
 
     if makefile:
         relativ_sokvag = Path(makefile).relative_to(Path(source_root()))
-        path = absolute_path( filename, relativ_sokvag, root)
+        path = absolute_path(filename, relativ_sokvag, root)
 
-    elif os.path.isabs( filename):
+    elif os.path.isabs(filename):
         relativ_sokvag = Path(filename).relative_to(Path(source_root()))
-        path = os.path.join(root, relativ_sokvag)    
+        path = os.path.join(root, relativ_sokvag)
     else:
         raise SystemError("This should never happen")
 
     return path
 
+
 def make_source_absolute_path(filename, makefile):
 
     root = source_root()
 
-    return absolute_path( filename, makefile, root)
+    return absolute_path(filename, makefile, root)
 
 
-def absolute_path(filename, makefile, root = None):
+def absolute_path(filename, makefile, root=None):
 
     if os.path.isabs(filename):
         return filename
 
-    directory, dummy = os.path.split(makefile)
+    directory, _dummy = os.path.split(makefile)
 
     if root:
         assembled = os.path.join(root, directory, filename)
@@ -99,19 +96,18 @@ def normalize_library_target(libs, paths=None):
 
 def includes(dependency_file, makefile):
 
-    context_directory, dummy = os.path.split(makefile)
+    context_directory, _dummy = os.path.split(makefile)
     if os.path.exists(dependency_file):
         with open(dependency_file) as file:
             files = file.read()
-        files = files.replace('\\\n', '\n')
+        files = files.replace("\\\n", "\n")
         reply = []
-        for f in (files.split()[1:]):
+        for f in files.split()[1:]:
             filename = f.rstrip()
             if os.path.isabs(filename):
                 abs_path = filename
             else:
-                abs_path = os.path.abspath(
-                    os.path.join(context_directory, filename))
+                abs_path = os.path.abspath(os.path.join(context_directory, filename))
             item = model.store.register(abs_path, abs_path, makefile)
 
             reply.append(item)
@@ -126,16 +122,20 @@ def make_clean_target(targets, makefile):
     """
     for target in targets:
         clean_target.add_dependency(
-            model.register(
-                'clean_' + target.name(), makefile=makefile.filename())
+            model.register("clean_" + target.name(), makefile=makefile.filename())
             .add_recipe(
-                Recipe(recipe.clean, {'filename': target, 'makefile': makefile.filename()}))
+                Recipe(
+                    recipe.clean, {"filename": target, "makefile": makefile.filename()}
+                )
+            )
             .execute(True)
         )
+
 
 #
 # environment functions
 #
+
 
 def source_root():
     value = state.settings.source_root()
@@ -147,6 +147,7 @@ def source_root():
         print("\nCASUAL_MAKE_SOURCE_ROOT is not set")
 
     return ""
+
 
 def build_root():
     value = state.settings.build_root()
@@ -181,6 +182,7 @@ def optional_library_paths():
 
     return []
 
+
 def make_absolute_path(paths, makefile):
     """
     Normalize path in path list
@@ -195,12 +197,12 @@ def make_absolute_path(paths, makefile):
 
 
 def get_include_paths(makefile):
-    value = model.get_value(makefile, 'include_paths')
+    value = model.get_value(makefile, "include_paths")
     return value if value else []
 
 
 def get_library_paths(makefile):
-    value = model.get_value(makefile, 'library_paths')
+    value = model.get_value(makefile, "library_paths")
     return make_absolute_path(value, makefile) if value else []
 
 
@@ -209,22 +211,31 @@ def get_library_paths(makefile):
 #
 
 
-def Compile(sourcefile, objectfile=None, directive=[]):
+def Compile(sourcefile, objectfile=None, directive=None):
     """
     Compile code to object files
     """
     makefile = caller()
+
+    if directive is None:
+        directive = []
 
     if not objectfile:
         objectfile = selector.make_objectname(sourcefile)
 
     dependencyfile = selector.make_dependencyfilename(objectfile)
     fulldependencyfile = make_build_absolute_path(dependencyfile, makefile.filename())
-    dependencyfile_target = model.register(name=dependencyfile, filename=fulldependencyfile, makefile=makefile.filename())
+    dependencyfile_target = model.register(
+        name=dependencyfile, filename=fulldependencyfile, makefile=makefile.filename()
+    )
     object_dependencies = includes(
-        dependencyfile_target.filename(), makefile=makefile.filename())
-    source_target = model.register(name=sourcefile, filename=make_source_absolute_path(
-        sourcefile, makefile.filename()), makefile=makefile.filename())
+        dependencyfile_target.filename(), makefile=makefile.filename()
+    )
+    source_target = model.register(
+        name=sourcefile,
+        filename=make_source_absolute_path(sourcefile, makefile.filename()),
+        makefile=makefile.filename(),
+    )
 
     dependencyfile_target.add_dependency(source_target)
 
@@ -236,22 +247,23 @@ def Compile(sourcefile, objectfile=None, directive=[]):
     object_dependencies.append(dependencyfile_target)
 
     # register the objectfile in module
-    object_target = model.register(name=objectfile, filename=make_build_absolute_path(
-        objectfile, makefile.filename()), makefile=makefile.filename())
+    object_target = model.register(
+        name=objectfile,
+        filename=make_build_absolute_path(objectfile, makefile.filename()),
+        makefile=makefile.filename(),
+    )
 
     arguments = {
-        'destination': object_target,
-        'dependencyfile':  fulldependencyfile,
-        'source': source_target,
-        'include_paths': get_include_paths(makefile.filename()),
-        'directive': directive
+        "destination": object_target,
+        "dependencyfile": fulldependencyfile,
+        "source": source_target,
+        "include_paths": get_include_paths(makefile.filename()),
+        "directive": directive,
     }
 
     object_target.add_recipe(
         Recipe(recipe.execute_dependency_generation, arguments)
-    ).add_recipe(
-        Recipe(recipe.compile, arguments)
-    ).add_dependency(object_dependencies)
+    ).add_recipe(Recipe(recipe.compile, arguments)).add_dependency(object_dependencies)
 
     compile_target.add_dependency(object_target)
 
@@ -266,25 +278,27 @@ def LinkLibrary(destination, objects, libs):
     """
 
     makefile = caller()
-    directory, dummy = os.path.split(makefile.filename())
+    directory, _dummy = os.path.split(makefile.filename())
     name = os.path.basename(destination)
-    full_library_name = make_build_absolute_path(selector.expanded_library_name(destination, directory))
+    full_library_name = make_build_absolute_path(
+        selector.expanded_library_name(destination, directory)
+    )
     library_target = model.register(
-        name=name, filename=full_library_name, makefile=makefile.filename())
+        name=name, filename=full_library_name, makefile=makefile.filename()
+    )
 
     library_paths = get_library_paths(makefile.filename())
-    normalized_library_targets = normalize_library_target(
-        libs, paths=library_paths)
+    normalized_library_targets = normalize_library_target(libs, paths=library_paths)
     arguments = {
-        'destination': library_target,
-        'objects': objects,
-        'libraries': normalized_library_targets,
-        'library_paths': library_paths
+        "destination": library_target,
+        "objects": objects,
+        "libraries": normalized_library_targets,
+        "library_paths": library_paths,
     }
 
-    library_target.add_recipe(
-        Recipe(recipe.link_library, arguments)
-    ).add_dependency(objects + normalized_library_targets).add_dependency(makefile)
+    library_target.add_recipe(Recipe(recipe.link_library, arguments)).add_dependency(
+        objects + normalized_library_targets
+    ).add_dependency(makefile)
 
     link_library_target.add_dependency([library_target, makefile])
 
@@ -299,20 +313,20 @@ def LinkArchive(destination, objects):
     """
 
     makefile = caller()
-    directory, dummy = os.path.split(makefile.filename())
+    directory, _dummy = os.path.split(makefile.filename())
     name = os.path.basename(destination)
 
-    full_archive_name = make_build_absolute_path( selector.expanded_archive_name(destination, directory))
+    full_archive_name = make_build_absolute_path(
+        selector.expanded_archive_name(destination, directory)
+    )
     archive_target = model.register(
-        name=name, filename=full_archive_name, makefile=makefile.filename())
-    arguments = {
-        'destination': archive_target,
-        'objects': objects
-    }
+        name=name, filename=full_archive_name, makefile=makefile.filename()
+    )
+    arguments = {"destination": archive_target, "objects": objects}
 
-    archive_target.add_recipe(
-        Recipe(recipe.link_archive, arguments)
-    ).add_dependency(objects).add_dependency(makefile)
+    archive_target.add_recipe(Recipe(recipe.link_archive, arguments)).add_dependency(
+        objects
+    ).add_dependency(makefile)
 
     link_archive_target.add_dependency([archive_target, makefile])
 
@@ -324,19 +338,21 @@ def LinkArchive(destination, objects):
 def LinkExecutable(destination, objects, libs):
 
     makefile = caller()
-    directory, dummy = os.path.split(makefile.filename())
+    directory, _dummy = os.path.split(makefile.filename())
 
-    full_executable_name = make_build_absolute_path( selector.expanded_executable_name(
-        destination, directory))
+    full_executable_name = make_build_absolute_path(
+        selector.expanded_executable_name(destination, directory)
+    )
     executable_target = model.register(
-        full_executable_name, full_executable_name, makefile=makefile.filename())
+        full_executable_name, full_executable_name, makefile=makefile.filename()
+    )
     library_paths = get_library_paths(makefile.filename())
     normalized_library_targets = normalize_library_target(libs, library_paths)
     arguments = {
-        'destination': executable_target,
-        'objects': objects,
-        'libraries': normalized_library_targets,
-        'library_paths': library_paths
+        "destination": executable_target,
+        "objects": objects,
+        "libraries": normalized_library_targets,
+        "library_paths": library_paths,
     }
 
     executable_target.add_recipe(
@@ -353,20 +369,23 @@ def LinkExecutable(destination, objects, libs):
 def LinkUnittest(destination, objects, libs):
 
     makefile = caller()
-    directory, dummy = os.path.split(makefile.filename())
+    directory, _dummy = os.path.split(makefile.filename())
 
-    full_executable_name = make_build_absolute_path(selector.expanded_executable_name(
-        destination, directory))
+    full_executable_name = make_build_absolute_path(
+        selector.expanded_executable_name(destination, directory)
+    )
     executable_target = model.register(
-        full_executable_name, full_executable_name, makefile=makefile.filename())
+        full_executable_name, full_executable_name, makefile=makefile.filename()
+    )
     library_paths = get_library_paths(makefile.filename())
     normalized_library_targets = normalize_library_target(
-        libs, library_paths) + normalize_library_target(['gtest', 'gtest_main'])
+        libs, library_paths
+    ) + normalize_library_target(["gtest", "gtest_main"])
     arguments = {
-        'destination': executable_target,
-        'objects': objects,
-        'libraries': normalized_library_targets,
-        'library_paths': library_paths
+        "destination": executable_target,
+        "objects": objects,
+        "libraries": normalized_library_targets,
+        "library_paths": library_paths,
     }
 
     executable_target.add_recipe(
@@ -377,17 +396,17 @@ def LinkUnittest(destination, objects, libs):
 
     make_clean_target([executable_target], makefile)
 
-    test_executable_target = model.register(
-        "test-" + destination, destination, makefile=makefile.filename()
-    ).add_recipe(
-        Recipe(
-            recipe.test,
-            {
-                'destination': executable_target,
-                'library_paths': library_paths
-            }
+    test_executable_target = (
+        model.register("test-" + destination, destination, makefile=makefile.filename())
+        .add_recipe(
+            Recipe(
+                recipe.test,
+                {"destination": executable_target, "library_paths": library_paths},
+            )
         )
-    ).execute(True).serial(True)
+        .execute(True)
+        .serial(True)
+    )
 
     test_executable_target.add_dependency(executable_target)
     test_target.add_dependency(test_executable_target)
@@ -398,7 +417,7 @@ def LinkUnittest(destination, objects, libs):
 def Install(source, path):
 
     if not source:
-        return None
+        return
     if not isinstance(source, list):
         source = [source]
 
@@ -407,48 +426,52 @@ def Install(source, path):
     for item in source:
         if isinstance(item, tuple):
             install_file_target = model.register(
-                'install_' + item[0], makefile=makefile.filename())
+                "install_" + item[0], makefile=makefile.filename()
+            )
             dependency_target = model.get(item[0])
             if not dependency_target:
-                filename = os.path.abspath(os.path.dirname(
-                    makefile.filename()) + '/' + item[0])
+                filename = os.path.abspath(
+                    os.path.dirname(makefile.filename()) + "/" + item[0]
+                )
                 dependency_target = model.register(
-                    item[0], filename, makefile=makefile.filename())
-            install_file_target.add_dependency(
-                dependency_target).execute(True).serial(True)
+                    item[0], filename, makefile=makefile.filename()
+                )
+            install_file_target.add_dependency(dependency_target).execute(True).serial(
+                True
+            )
             arguments = {
-                'source': dependency_target.filename(),
-                'path': path + '/' + item[1]
+                "source": dependency_target.filename(),
+                "path": path + "/" + item[1],
             }
             install_file_target.add_recipe(Recipe(recipe.install, arguments))
             install_target.add_dependency(install_file_target)
         elif isinstance(item, model.Target):
             install_file_target = model.register(
-                'install_' + item.name(), makefile=makefile.filename())
+                "install_" + item.name(), makefile=makefile.filename()
+            )
             dependency_target = item
-            install_file_target.add_dependency(
-                dependency_target).execute(True).serial(True)
-            arguments = {
-                'source': dependency_target.filename(),
-                'path': path
-            }
+            install_file_target.add_dependency(dependency_target).execute(True).serial(
+                True
+            )
+            arguments = {"source": dependency_target.filename(), "path": path}
             install_file_target.add_recipe(Recipe(recipe.install, arguments))
             install_target.add_dependency(install_file_target)
         else:
             install_file_target = model.register(
-                'install_' + item, makefile=makefile.filename())
+                "install_" + item, makefile=makefile.filename()
+            )
             dependency_target = model.get(item)
             if not dependency_target:
-                filename = os.path.abspath(os.path.dirname(
-                    makefile.filename()) + '/' + item)
+                filename = os.path.abspath(
+                    os.path.dirname(makefile.filename()) + "/" + item
+                )
                 dependency_target = model.register(
-                    item, filename, makefile=makefile.filename())
-            install_file_target.add_dependency(
-                dependency_target).execute(True).serial(True)
-            arguments = {
-                'source': dependency_target.filename(),
-                'path': path
-            }
+                    item, filename, makefile=makefile.filename()
+                )
+            install_file_target.add_dependency(dependency_target).execute(True).serial(
+                True
+            )
+            arguments = {"source": dependency_target.filename(), "path": path}
             install_file_target.add_recipe(Recipe(recipe.install, arguments))
             install_target.add_dependency(install_file_target)
 
@@ -462,16 +485,16 @@ def Environment(variabel, value):
 
 def IncludePaths(paths):
     """
-    Add 'extra' include paths 
+    Add 'extra' include paths
     """
-    model.add_key_value(caller().filename(), 'include_paths', paths)
+    model.add_key_value(caller().filename(), "include_paths", paths)
 
 
 def LibraryPaths(paths):
     """
-    Add 'extra' library paths 
+    Add 'extra' library paths
     """
-    model.add_key_value(caller().filename(), 'library_paths', paths)
+    model.add_key_value(caller().filename(), "library_paths", paths)
 
 
 def Dependencies(target, dependencies):
@@ -480,11 +503,11 @@ def Dependencies(target, dependencies):
     """
     if not isinstance(target, Target):
         target = model.register(
-            name=target, filename=target, makefile=caller().filename())
+            name=target, filename=target, makefile=caller().filename()
+        )
 
     if not isinstance(dependencies, list):
-        raise SystemError("dependencies is " +
-                          str(dependencies) + " must be a list")
+        raise TypeError("dependencies is " + str(dependencies) + " must be a list")
 
     for i, dependency in enumerate(dependencies):
         if not isinstance(dependency, Target):
@@ -503,12 +526,15 @@ def Build(filename):
 
     makefile = caller()
     if not os.path.isabs(filename):
-        directory, dummy = os.path.split(makefile.filename())
+        directory, _dummy = os.path.split(makefile.filename())
         if directory:
             filename = os.path.join(directory, filename)
 
-    target = model.register(name=filename, filename=absolute_path(
-        filename, makefile.filename()), makefile=makefile.filename())
+    model.register(
+        name=filename,
+        filename=absolute_path(filename, makefile.filename()),
+        makefile=makefile.filename(),
+    )
 
     with open(filename) as file:
         importCode(file, filename, "makefile", 1)

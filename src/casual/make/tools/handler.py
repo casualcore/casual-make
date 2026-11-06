@@ -1,13 +1,9 @@
-from multiprocessing import Queue, Process
+import multiprocessing as mp
+from multiprocessing import Process, Queue
 from queue import Empty
 
-import multiprocessing as mp
-import casual.make.entity.recipe as recipe
-import casual.make.entity.state as state
-
 import casual.make.tools.output as out
-import sys
-import os
+from casual.make.entity import recipe, state
 
 
 def worker(input, output):
@@ -22,9 +18,9 @@ def worker(input, output):
             output.put((item, True))
         except SystemError as ex:
             if state.settings.verbose():
-                out.error('\nprocessed makefile: ' + str(item.makefile))
+                out.error("\nprocessed makefile: " + str(item.makefile))
             if state.settings.verbose():
-                out.error('processed filename: ' + str(item.filename))
+                out.error("processed filename: " + str(item.filename))
             if not state.settings.ignore_errors():
                 out.error(str(ex))
             output.put((item, False))
@@ -56,11 +52,11 @@ def serial(actions):
     for item in actions:
         try:
             recipe.dispatch(item)
-        except SystemError as ex:
+        except SystemError:
             if state.settings.verbose():
-                out.error('\nprocessed makefile: ' + str(item.makefile))
+                out.error("\nprocessed makefile: " + str(item.makefile))
             if state.settings.verbose():
-                out.error('processed filename: ' + str(item.filename))
+                out.error("processed filename: " + str(item.filename))
             if not state.settings.ignore_errors():
                 raise
 
@@ -74,9 +70,8 @@ class Handler:
         self.reply_queue = Queue()
 
     def __enter__(self):
-        for dummy in range(mp.cpu_count()):
-            process = Process(target=worker, args=(
-                self.task_queue, self.reply_queue))
+        for _dummy in range(mp.cpu_count()):
+            process = Process(target=worker, args=(self.task_queue, self.reply_queue))
             process.daemon = True
             process.start()
             self.processes.append(process)
@@ -97,7 +92,7 @@ class Handler:
                 self.task_queue.put(action, True)
 
             while actions:
-                (action, ok) = self.reply_queue.get(True)
+                action, ok = self.reply_queue.get(True)
 
                 actions.remove(action)
                 if not ok and not state.settings.ignore_errors():
@@ -106,10 +101,10 @@ class Handler:
         except KeyboardInterrupt:
             print("\nCaught KeyboardInterrupt, terminating workers")
             self.__empty()
-            #terminate_children( process)
+            # terminate_children( process)
             raise SystemError("aborting...")
         except:
-            #print ("cleaning queues")
+            # print ("cleaning queues")
             self.__empty()
             raise
 
@@ -118,14 +113,14 @@ class Handler:
         while not self.task_queue.empty():
             try:
                 self.task_queue.get_nowait()
-            except:
+            except:  # noqa: E722, S110
                 pass
 
         self.reply_queue.cancel_join_thread()
         while not self.reply_queue.empty():
             try:
                 self.reply_queue.get_nowait()
-            except:
+            except:  # noqa: E722, S110
                 pass
 
         for dummy in range(mp.cpu_count()):
@@ -135,6 +130,7 @@ class Handler:
         """
         Handle the action list in parallel or in serial
         """
+
         def has_serial(item):
             return item.serial()
 

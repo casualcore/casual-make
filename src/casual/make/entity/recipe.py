@@ -1,17 +1,13 @@
-import pprint
-
+import importlib
 import os
+import pprint
 import shutil
-import time
 import sys
 
+from casual.make.entity import state
 from casual.make.entity.target import Target
-import casual.make.tools.executor as executor
-import casual.make.tools.output as output
-import casual.make.entity.state as state
+from casual.make.tools import executor, output
 
-
-import importlib
 compiler_handler_module = state.settings.compiler_handler_module()
 selector = importlib.import_module(compiler_handler_module)
 
@@ -21,8 +17,8 @@ callback_list = []
 
 def find(file, paths):
     for p in paths:
-        if os.path.exists(p + '/' + file):
-            return p + '/' + file
+        if os.path.exists(p + "/" + file):
+            return p + "/" + file
     return None
 
 
@@ -44,27 +40,29 @@ def execute_dependency_generation(input):
     """
     Recipe for creating dependency includes
     """
-    source = input['source']
-    destination = input['destination']
-    context_directory = os.path.dirname(input['destination'].makefile())
-    include_paths = input['include_paths']
-    dependency_file = os.path.join(context_directory, input['dependencyfile'])
+    source = input["source"]
+    destination = input["destination"]
+    context_directory = os.path.dirname(input["destination"].makefile())
+    include_paths = input["include_paths"]
+    dependency_file = os.path.join(context_directory, input["dependencyfile"])
     selector.execute_dependency_generation(
-        source, destination, context_directory, include_paths, dependency_file)
+        source, destination, context_directory, include_paths, dependency_file
+    )
 
 
 def compile(input):
     """
     Recipe for compiling
     """
-    source = input['source']
-    destination = input['destination']
-    include_paths = input['include_paths']
-    context_directory = os.path.dirname(input['destination'].makefile())
-    directive = input['directive']
+    source = input["source"]
+    destination = input["destination"]
+    include_paths = input["include_paths"]
+    context_directory = os.path.dirname(input["destination"].makefile())
+    directive = input["directive"]
 
     selector.execute_compile(
-        source, destination, context_directory, include_paths, directive)
+        source, destination, context_directory, include_paths, directive
+    )
 
 
 def link(input):
@@ -72,16 +70,17 @@ def link(input):
     Recipe for linking objects to libraries
     """
 
-    destination = input['destination']
-    objects = retrieve_filenames(input['objects'])
-    context_directory = os.path.dirname(input['destination'].makefile())
+    destination = input["destination"]
+    objects = retrieve_filenames(input["objects"])
+    context_directory = os.path.dirname(input["destination"].makefile())
 
     # choose correct flavor of linking
-    libraries = input['libraries']
-    library_paths = input['library_paths']
+    libraries = input["libraries"]
+    library_paths = input["library_paths"]
 
     selector.execute_link_library(
-        destination, context_directory, objects, library_paths, libraries)
+        destination, context_directory, objects, library_paths, libraries
+    )
 
 
 def link_library(input):
@@ -89,16 +88,17 @@ def link_library(input):
     Recipe for linking objects to libraries
     """
 
-    destination = input['destination']
-    objects = retrieve_filenames(input['objects'])
-    context_directory = os.path.dirname(input['destination'].makefile())
+    destination = input["destination"]
+    objects = retrieve_filenames(input["objects"])
+    context_directory = os.path.dirname(input["destination"].makefile())
 
     # choose correct flavor of linking
-    libraries = input['libraries']
-    library_paths = input['library_paths']
+    libraries = input["libraries"]
+    library_paths = input["library_paths"]
 
     selector.execute_link_library(
-        destination, context_directory, objects, library_paths, libraries)
+        destination, context_directory, objects, library_paths, libraries
+    )
 
 
 def link_executable(input):
@@ -106,15 +106,16 @@ def link_executable(input):
     Recipe for linking objects to executables
     """
 
-    destination = input['destination']
-    objects = retrieve_filenames(input['objects'])
-    context_directory = os.path.dirname(input['destination'].makefile())
+    destination = input["destination"]
+    objects = retrieve_filenames(input["objects"])
+    context_directory = os.path.dirname(input["destination"].makefile())
 
-    libraries = input['libraries']
-    library_paths = input['library_paths']
+    libraries = input["libraries"]
+    library_paths = input["library_paths"]
 
     selector.execute_link_executable(
-        destination, context_directory, objects, library_paths, libraries)
+        destination, context_directory, objects, library_paths, libraries
+    )
 
 
 def link_archive(input):
@@ -122,9 +123,9 @@ def link_archive(input):
     Recipe for linking objects to archives
     """
 
-    destination = input['destination']
-    objects = retrieve_filenames(input['objects'])
-    context_directory = os.path.dirname(input['destination'].makefile())
+    destination = input["destination"]
+    objects = retrieve_filenames(input["objects"])
+    context_directory = os.path.dirname(input["destination"].makefile())
 
     selector.execute_link_archive(destination, context_directory, objects)
 
@@ -133,22 +134,23 @@ def link_unittest(input):
     """
     Recipe for linking objects to executables
     """
-    destination = input['destination']
-    objects = retrieve_filenames(input['objects'])
-    context_directory = os.path.dirname(input['destination'].makefile())
+    destination = input["destination"]
+    objects = retrieve_filenames(input["objects"])
+    context_directory = os.path.dirname(input["destination"].makefile())
 
-    libraries = input['libraries']
-    library_paths = input['library_paths']
+    libraries = input["libraries"]
+    library_paths = input["library_paths"]
 
     selector.execute_link_executable(
-        destination, context_directory, objects, library_paths, libraries)
+        destination, context_directory, objects, library_paths, libraries
+    )
 
 
 def test(input):
-    testfile = input['destination']
-    context_directory = os.path.dirname(input['destination'].makefile())
+    testfile = input["destination"]
+    context_directory = os.path.dirname(input["destination"].makefile())
 
-    library_paths = input['library_paths']
+    library_paths = input["library_paths"]
     cmd = [testfile.filename(), "--gtest_color=yes"]
     extra_arguments = state.settings.extra_args()
     if extra_arguments:
@@ -161,14 +163,15 @@ def test(input):
 def install(input):
     def copy_file(src, dst):
         dst_filepath = dst + os.path.basename(src)
-        if os.path.exists(dst_filepath):
-            if os.path.getmtime(dst_filepath) >= os.path.getmtime(src):
-                return (dst_filepath, False)
-        
+        if os.path.exists(dst_filepath) and os.path.getmtime(
+            dst_filepath
+        ) >= os.path.getmtime(src):
+            return (dst_filepath, False)
+
         filename = shutil.copy2(src, dst)
         return (filename, True)
-    
-    source = input['source']
+
+    source = input["source"]
     if isinstance(source, str):
         pass
     elif isinstance(source, Target):
@@ -176,26 +179,25 @@ def install(input):
     else:
         source = " ".join(source)
 
-    path = input['path']
-    if path[-1] != '/':
-        path += '/'
+    path = input["path"]
+    if path[-1] != "/":
+        path += "/"
     if not state.settings.dry_run():
         try:
-            (filename, copied) = copy_file(source, path)
-        except:
+            filename, copied = copy_file(source, path)
+        except:  # noqa: E722
             os.makedirs(path)
-            (filename, copied) = copy_file(source, path)
+            filename, copied = copy_file(source, path)
 
         if copied:
-            sys.stdout.write(output.reformat(
-                'copy ' + source + ' ' + filename))
+            sys.stdout.write(output.reformat("copy " + source + " " + filename))
     else:
-        sys.stdout.write(output.reformat('copy ' + source + ' ' + path))
+        sys.stdout.write(output.reformat("copy " + source + " " + path))
 
 
 def clean(input):
-    file = input['filename']
-    context_directory = os.path.dirname(input['makefile'])
+    file = input["filename"]
+    context_directory = os.path.dirname(input["makefile"])
 
     with executor.cd(context_directory):
         if isinstance(file, Target):

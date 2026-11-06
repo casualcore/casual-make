@@ -1,17 +1,18 @@
-import casual.make.tools.environment as environment
-import casual.make.entity.state as state
-
-import os
 import json
+import os
 import platform
 from importlib import resources
 
+from casual.make.entity import state
+from casual.make.tools import environment
 
-def file_or_none( file):
-    if os.path.exists( file):
+
+def file_or_none(file):
+    if os.path.exists(file):
         return file
 
     return None
+
 
 def build_profile_file():
 
@@ -23,7 +24,7 @@ def build_profile_file():
 
     build_configuration_path = next(
         (file for path in candidates if path and (file := file_or_none(path))),
-        None  # Standardvärde om ingen fil hittas
+        None,  # Standardvärde om ingen fil hittas
     )
 
     if build_configuration_path:
@@ -34,8 +35,8 @@ def build_profile_file():
 
 def build_configuration():
 
-    compiler = (environment.get("CXX") or "g++").split()    
-    
+    compiler = (environment.get("CXX") or "g++").split()
+
     type_of_build = "normal"
     if state.settings.debug():
         type_of_build = "debug"
@@ -49,9 +50,10 @@ def build_configuration():
 
     system = platform.system()
     compiler0 = compiler[0]
-    if system in stored_configuration and \
-        compiler0 in stored_configuration[system]:
-        return stored_configuration[system][compiler0]['defaults'] | stored_configuration[system][compiler0]['profiles'][type_of_build]
+    if system in stored_configuration and compiler0 in stored_configuration[system]:
+        return (
+            stored_configuration[system][compiler0]["defaults"]
+            | stored_configuration[system][compiler0]["profiles"][type_of_build]
+        )
     else:
         raise SystemError("No valid build profiles found!")
-

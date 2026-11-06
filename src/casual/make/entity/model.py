@@ -1,19 +1,15 @@
-import inspect
 import pprint
-import os
-import time
-import sys
 
+from casual.make.entity import state
 from casual.make.entity.target import Target
 from casual.make.tools.executor import importCode
-import casual.make.entity.state as state
 
 
 # globals
-class Store(object):
+class Store:
     def __init__(self):
         # actual model
-        self.m_model = {'key_value': {}}
+        self.m_model = {"key_value": {}}
         # target cache
         self.m_target_cache = {}
         self.m_analyze_cache = {}
@@ -32,7 +28,12 @@ class Store(object):
         Fetch target from model
         """
         # First - exact match
-        if name and filename and name in self.m_target_cache and filename in self.m_target_cache[name]:
+        if (
+            name
+            and filename
+            and name in self.m_target_cache
+            and filename in self.m_target_cache[name]
+        ):
             return self.m_target_cache[name][filename]
         # Second - match by correct path
         elif paths:
@@ -63,8 +64,7 @@ class Store(object):
             else:
                 if name not in self.m_target_cache:
                     self.m_target_cache[name] = {}
-                self.m_target_cache[name][filename] = Target(
-                    name, filename, makefile)
+                self.m_target_cache[name][filename] = Target(name, filename, makefile)
                 return self.m_target_cache[name][filename]
 
 
@@ -90,9 +90,11 @@ def dump_model():
 def dump_target_cache():
     pprint.pprint(store.target_cache())
 
+
 def list_targets():
     for target in store.target_cache():
         print(target)
+
 
 def dump_analyze_cache():
     pprint.pprint(store.analyze_cache())
@@ -102,19 +104,23 @@ def add_key_value(makefile, key, value):
     """
     Add key, value in model
     """
-    if makefile not in store.model()['key_value']:
-        store.model()['key_value'][makefile] = {}
-    store.model()['key_value'][makefile][key] = value
+    if makefile not in store.model()["key_value"]:
+        store.model()["key_value"][makefile] = {}
+    store.model()["key_value"][makefile][key] = value
 
 
 def get_value(makefile, key):
     """
-    Get value with key from model 
+    Get value with key from model
     """
-    if makefile in store.model()['key_value'] and key in store.model()['key_value'][makefile]:
-        return store.model()['key_value'][makefile][key]
+    if (
+        makefile in store.model()["key_value"]
+        and key in store.model()["key_value"][makefile]
+    ):
+        return store.model()["key_value"][makefile][key]
     else:
         return None
+
 
 def construct_dependency_tree(target):
     """
@@ -135,8 +141,7 @@ def calculate_max_timestamp(target):
     if target.max():
         return target.max()
 
-    value = max(target.dependency(),
-                key=lambda item: item.timestamp()).timestamp()
+    value = max(target.dependency(), key=lambda item: item.timestamp()).timestamp()
     return target.max(value)
 
 
@@ -149,7 +154,7 @@ def analyze_dependency_tree(target):
         return store.analyze_cache()[target]
 
     if not target:
-        raise SyntaxError('target is None')
+        raise SyntaxError("target is None")
 
     if not target.dependency():
         store.analyze_cache()[target] = target.execute()
@@ -221,7 +226,7 @@ def construct_action_list(target):
         leafs = []
 
         while stack:
-            (index, next) = stack.pop()
+            index, next = stack.pop()
 
             while len(result) <= index:
                 result.append([])
@@ -242,7 +247,7 @@ def construct_action_list(target):
 
     def normalize(levels):
         """
-        normalizes the action list, returns unique actions 
+        normalizes the action list, returns unique actions
         """
 
         def action_exists(action, result):
@@ -254,8 +259,7 @@ def construct_action_list(target):
 
         result = []
         for level in reversed(levels):
-            prospect = [
-                action for action in level if not action_exists(action, result)]
+            prospect = [action for action in level if not action_exists(action, result)]
             if prospect:
                 result.append(list(dict.fromkeys(prospect)))
 

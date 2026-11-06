@@ -5,7 +5,9 @@ def __DEFAULT():
     return "1"
 
 
-def set(parameter, value=__DEFAULT()):
+def set(parameter, value=None):
+    if not value:
+        value = __DEFAULT()
     os.environ[parameter] = value
 
 
@@ -15,4 +17,4 @@ def get(parameter, value=None):
     elif isinstance(value, str):
         return value
     else:
-        None
+        return None

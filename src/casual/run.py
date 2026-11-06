@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
-import sys
-import subprocess
-import os
-import platform
 
-import casual.make.entity.state as state
-import casual.make.entity.cli as cli
-import casual.make.platform.selector as selector
+from casual.make.entity import cli, state
+from casual.make.platform import selector
+import importlib.metadata
+
+def get_installed_version() -> str:
+    try:
+        return importlib.metadata.version("casual-make-core")
+    except importlib.metadata.PackageNotFoundError:
+        return "alpha version"
 
 def main():
 
@@ -15,8 +17,7 @@ def main():
 
     # handle simples action first
     if args.version:
-        import casual as casual
-        print(casual.__version__)
+        print( f"casual-make: {get_installed_version()}")
         raise SystemExit(0)
 
     state.environment(args)
@@ -26,9 +27,8 @@ def main():
     try:
 
         # Need to import this after argparse
-        import casual.make.entity.model as model
-        import casual.make.tools.handler as handler
-        import casual.make.tools.output as output
+        from casual.make.entity import model
+        from casual.make.tools import handler, output
 
         # Build the actual model from a file
         output.print("building model: ", end="")
@@ -48,7 +48,9 @@ def main():
         output.print("done")
 
         if actions:
-            output.print(f"Using build profile found in {selector.build_profile_file()}")
+            output.print(
+                f"Using build profile found in {selector.build_profile_file()}"
+            )
 
         if args.list_targets:
             model.list_targets()
@@ -59,8 +61,7 @@ def main():
         if args.statistics:
             for level in actions:
                 number_of_actions = number_of_actions + len(level)
-            statistics = "(" + str(total_handled) + "/" + \
-                str(number_of_actions) + ")"
+            statistics = "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
             output.print("progress: " + statistics)
 
         # start handling actions
@@ -71,8 +72,9 @@ def main():
                 handler.handle(level)
                 if args.statistics:
                     total_handled = total_handled + number_of_actions_in_level
-                    statistics = "(" + str(total_handled) + \
-                        "/" + str(number_of_actions) + ")"
+                    statistics = (
+                        "(" + str(total_handled) + "/" + str(number_of_actions) + ")"
+                    )
                     output.print("progress: " + statistics)
 
     except SystemError as exception:

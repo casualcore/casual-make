@@ -1,8 +1,3 @@
-
-
-from functools import partial
-
-
 class Color:
 
     __grey = 30
@@ -14,7 +9,7 @@ class Color:
     __cyan = 36
     __white = 37
 
-    __ENDC = '\033[0m'
+    __ENDC = "\033[0m"
 
     def __init__(self):
         self.__active = True
@@ -24,9 +19,9 @@ class Color:
             color = color + 60
 
         if bold:
-            return '\033[1;' + str(color) + 'm'
+            return "\033[1;" + str(color) + "m"
         else:
-            return '\033[0;' + str(color) + 'm'
+            return "\033[0;" + str(color) + "m"
 
     def grey(self, string, bold=False, bright=False):
         if self.__active:

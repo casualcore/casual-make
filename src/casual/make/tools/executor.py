@@ -1,29 +1,29 @@
-from contextlib import contextmanager
+import errno
 import os
 import subprocess
-import errno
-import re
-import sys
-import casual.make.tools.environment as environment
-import casual.make.tools.output as output
-import casual.make.entity.state as state
+from contextlib import contextmanager
+
+from casual.make.entity import state
+from casual.make.tools import output
 
 
 def importCode(file, filename, name, add_to_sys_modules=0):
-    """ code can be any object containing code -- string, file object, or
-       compiled code object. Returns a new module object initialized
-       by dynamically importing the given code and optionally adds it
-       to sys.modules under the given name.
+    """code can be any object containing code -- string, file object, or
+    compiled code object. Returns a new module object initialized
+    by dynamically importing the given code and optionally adds it
+    to sys.modules under the given name.
     """
     import types
+
     module = types.ModuleType(name)
 
     if add_to_sys_modules:
         import sys
+
         sys.modules[name] = module
 
-    code = compile(file.read(), filename, 'exec')
-    exec(code, module.__dict__)
+    code = compile(file.read(), filename, "exec")
+    exec(code, module.__dict__)  # noqa: S102
 
     return module
 
@@ -39,7 +39,7 @@ def cd(newdir):
 
 
 def create_directory(directory):
-    """ 
+    """
     We need this construction to avoid race conditions using multiple processes
     That is instead of checking first.
     """
@@ -60,9 +60,9 @@ def execute(command, show_command=True, show_output=True, env=None):
     try:
         if show_command and not state.settings.quiet():
             if state.settings.raw_format():
-                output.print(' '.join(str(v) for v in command), format=False)
+                output.print(" ".join(str(v) for v in command), format=False)
             else:
-                output.print(' '.join(str(v) for v in command), end='')
+                output.print(" ".join(str(v) for v in command), end="")
 
         out = None if show_output else subprocess.DEVNULL
 
@@ -73,8 +73,7 @@ def execute(command, show_command=True, show_output=True, env=None):
             env = dict(os.environ, **env)
 
         if not state.settings.dry_run():
-            reply = subprocess.run(command, stdout=out,
-                                   stderr=err, check=True, env=env)
+            subprocess.run(command, stdout=out, stderr=err, check=True, env=env)
 
     except KeyboardInterrupt:
         # todo: abort living subprocess here
@@ -82,20 +81,20 @@ def execute(command, show_command=True, show_output=True, env=None):
 
     except subprocess.CalledProcessError as ex:
         if state.settings.verbose():
-            output.error('processed command: ' + ' '.join(str(v)
-                                                          for v in command))
+            output.error("processed command: " + " ".join(str(v) for v in command))
         if ex.stderr:
             output.error(ex.stderr.decode(), header=True)
         raise SystemError("aborting due to errors")
 
-def execute_result_to_file( command, directory=None, file=None, env=None):
+
+def execute_result_to_file(command, directory=None, file=None, env=None):
 
     try:
 
-        def to_file( filename, result):
+        def to_file(filename, result):
             if result:
-                with open( filename, "w") as f:
-                    f.write( result.stdout.decode())
+                with open(filename, "w") as f:
+                    f.write(result.stdout.decode())
 
         if env:
             # append to global env
@@ -105,20 +104,21 @@ def execute_result_to_file( command, directory=None, file=None, env=None):
 
         if directory:
             with cd(directory):
-                result = subprocess.run(command, capture_output=True)
+                result = subprocess.run(command, capture_output=True, check=False)
                 to_file(file, result)
         else:
-            result = subprocess.run(command, capture_output=True)
+            result = subprocess.run(command, capture_output=True, check=False)
             to_file(file, result)
-
 
     except subprocess.CalledProcessError as ex:
         if ex.stderr:
             output.error(ex.stderr.decode(), header=True)
-        raise SystemError("aborting due to errors")   
+        raise SystemError("aborting due to errors")
 
 
-def command(cmd, name=None, directory=None, show_command=True, show_output=True, env=None):
+def command(
+    cmd, name=None, directory=None, show_command=True, show_output=True, env=None
+):
 
     if directory:
         with cd(directory):

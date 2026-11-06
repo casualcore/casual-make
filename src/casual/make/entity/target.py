@@ -2,12 +2,14 @@ import os
 
 targetid = 0
 
+
 def nextid():
     global targetid
     targetid = targetid + 1
     return targetid
 
-class Recipe(object):
+
+class Recipe:
     def __init__(self, function, arguments):
         self.function = function
         self._arguments = arguments
@@ -16,7 +18,7 @@ class Recipe(object):
         return self._arguments
 
 
-class Target(object):
+class Target:
     def __init__(self, name, filename=None, makefile=None):
         self._name = name
         self._makefile = None
@@ -29,14 +31,14 @@ class Target(object):
         self._timestamp = 0
         self._targetid = nextid()
 
-        directory = ''
+        directory = ""
         if makefile:
-            directory, dummy = os.path.split(makefile)
+            directory, _dummy = os.path.split(makefile)
             self._makefile = os.path.abspath(makefile)
 
         if filename:
             if not os.path.isabs(filename):
-                self._filename = os.path.abspath(directory + '/' + filename)
+                self._filename = os.path.abspath(directory + "/" + filename)
             else:
                 self._filename = filename
 
