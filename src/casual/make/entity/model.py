@@ -1,6 +1,6 @@
 import pprint
 
-from casual.make.entity import state
+from casual.make.entity import settings
 from casual.make.entity.target import Target
 from casual.make.tools.executor import importCode
 
@@ -169,7 +169,7 @@ def analyze_dependency_tree(target):
 
             if current_target:
 
-                if action_required or state.settings.force():
+                if action_required or settings.get_settings().force():
 
                     # The depedency steps is already evalutated to be run
                     # So we need to run this one too.

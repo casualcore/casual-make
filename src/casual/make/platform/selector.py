@@ -3,7 +3,7 @@ import os
 import platform
 from importlib import resources
 
-from casual.make.entity import state
+from casual.make.entity import settings
 from casual.make.tools import environment
 
 
@@ -18,7 +18,7 @@ def build_profile_file():
 
     candidates = (
         environment.get("CASUAL_MAKE_CONFIGURATION_PATH"),
-        os.path.join(state.settings.source_root(), ".casual", "toolchain.json"),
+        os.path.join(settings.get_settings().source_root(), ".casual", "toolchain.json"),
         resources.files("casual.make").joinpath("toolchain.json"),
     )
 
@@ -38,9 +38,9 @@ def build_configuration():
     compiler = (environment.get("CXX") or "g++").split()
 
     type_of_build = "normal"
-    if state.settings.debug():
+    if settings.get_settings().debug():
         type_of_build = "debug"
-    elif state.settings.analyze():
+    elif settings.get_settings().analyze():
         type_of_build = "analyze"
 
     build_configuration_path = build_profile_file()

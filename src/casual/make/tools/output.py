@@ -2,10 +2,10 @@ import re
 import sys
 
 import casual.make.tools.color as color_module
-from casual.make.entity import state
+from casual.make.entity import settings
 
 # globals
-if state.settings.no_colors():
+if settings.get_settings().no_colors():
     color_module.color.active(False)
 
 

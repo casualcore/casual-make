@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "casual-make-core"
-version = "1.9.0"
+version = "1.9.1"
 description = "Corefunctionality for the buildsystem for casual"
 readme = "readme.md"
 authors = [

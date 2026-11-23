@@ -4,11 +4,11 @@ import pprint
 import shutil
 import sys
 
-from casual.make.entity import state
+from casual.make.entity import settings
 from casual.make.entity.target import Target
 from casual.make.tools import executor, output
 
-compiler_handler_module = state.settings.compiler_handler_module()
+compiler_handler_module = settings.get_settings().compiler_handler_module()
 selector = importlib.import_module(compiler_handler_module)
 
 action_list = {}
@@ -152,7 +152,7 @@ def test(input):
 
     library_paths = input["library_paths"]
     cmd = [testfile.filename(), "--gtest_color=yes"]
-    extra_arguments = state.settings.extra_args()
+    extra_arguments = settings.get_settings().extra_args()
     if extra_arguments:
         cmd += extra_arguments.split()
 
@@ -182,7 +182,7 @@ def install(input):
     path = input["path"]
     if path[-1] != "/":
         path += "/"
-    if not state.settings.dry_run():
+    if not settings.get_settings().dry_run():
         try:
             filename, copied = copy_file(source, path)
         except:  # noqa: E722
@@ -204,12 +204,12 @@ def clean(input):
             filename = file.filename()
             if os.path.exists(filename):
                 sys.stdout.write(output.reformat("rm -f " + filename))
-                if not state.settings.dry_run():
+                if not settings.get_settings().dry_run():
                     os.remove(filename)
         elif isinstance(file, str):
             if os.path.exists(file):
                 sys.stdout.write(output.reformat("rm -f " + file))
-                if not state.settings.dry_run():
+                if not settings.get_settings().dry_run():
                     os.remove(file)
         else:
             for f in file:
@@ -219,7 +219,7 @@ def clean(input):
                     filename = f.filename()
                 if os.path.exists(filename):
                     sys.stdout.write(output.reformat("rm -f " + filename))
-                    if not state.settings.dry_run():
+                    if not settings.get_settings().dry_run():
                         os.remove(filename)
 
 

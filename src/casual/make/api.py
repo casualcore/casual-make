@@ -2,12 +2,12 @@ import importlib
 import inspect
 import os
 
-from casual.make.entity import model, recipe, state
+from casual.make.entity import model, recipe, settings
 from casual.make.entity.target import Recipe, Target
 from casual.make.tools import environment
 from casual.make.tools.executor import importCode
 
-compiler_handler_module = state.settings.compiler_handler_module()
+compiler_handler_module = settings.get_settings().compiler_handler_module()
 selector = importlib.import_module(compiler_handler_module)
 
 from pathlib import Path
@@ -138,24 +138,24 @@ def make_clean_target(targets, makefile):
 
 
 def source_root():
-    value = state.settings.source_root()
+    value = settings.get_settings().source_root()
 
     if value:
         return value
 
-    if state.settings.verbose():
+    if settings.get_settings().verbose():
         print("\nCASUAL_MAKE_SOURCE_ROOT is not set")
 
     return ""
 
 
 def build_root():
-    value = state.settings.build_root()
+    value = settings.get_settings().build_root()
 
     if value:
         return value
 
-    if state.settings.verbose():
+    if settings.get_settings().verbose():
         print("\nCASUAL_MAKE_BUILD_ROOT is not set")
 
     return ""
@@ -166,7 +166,7 @@ def optional_include_paths():
     if value:
         return value.split(":")
 
-    if state.settings.verbose():
+    if settings.get_settings().verbose():
         print("\nCASUAL_MAKE_OPTIONAL_INCLUDE_PATHS is not set")
 
     return []
@@ -177,7 +177,7 @@ def optional_library_paths():
     if value:
         return value.split(":")
 
-    if state.settings.verbose():
+    if settings.get_settings().verbose():
         print("\nCASUAL_MAKE_OPTIONAL_LIBRARY_PATHS is not set")
 
     return []

@@ -1,7 +1,11 @@
 import os
 
-from casual.make.platform import common
-from casual.make.platform.common import configuration
+from casual.make.platform.common import (
+    add_item_to_list,
+    assemble_path,
+    configuration,
+    verify_type,
+)
 from casual.make.tools import environment, executor
 
 ######################################################################
@@ -13,12 +17,12 @@ from casual.make.tools import environment, executor
 
 def library_paths_directive(paths):
 
-    return common.add_item_to_list(paths, "-L")
+    return add_item_to_list(paths, "-L")
 
 
 def library_directive(libraries):
 
-    return common.add_item_to_list(libraries, "-l")
+    return add_item_to_list(libraries, "-l")
 
 
 def local_library_path(paths=None):
@@ -46,7 +50,7 @@ def execute_compile(source, destination, context_directory, paths, directive):
         + configuration.instance()["compile_extra"]
         + directive
         + ["-o", destination.filename(), source.filename()]
-        + common.add_item_to_list(escape_space(paths), "-I")
+        + add_item_to_list(escape_space(paths), "-I")
     )
     executor.command(cmd, destination, context_directory)
 
@@ -58,7 +62,7 @@ def execute_dependency_generation(
     cmd = (
         configuration.instance()["header_dependency_command"]
         + [source.filename()]
-        + common.add_item_to_list(escape_space(paths), "-I")
+        + add_item_to_list(escape_space(paths), "-I")
         + ["-MF", dependency_file]
     )
     executor.command(
@@ -77,7 +81,7 @@ def execute_link_library(
         + ["-o", destination.filename()]
         + objects
         + library_paths_directive(escape_space(library_paths))
-        + common.add_item_to_list(libraries, "-l")
+        + add_item_to_list(libraries, "-l")
     )
     executor.command(cmd, destination, context_directory)
 
@@ -93,7 +97,7 @@ def execute_link_executable(
         + ["-o", destination.filename()]
         + objects
         + library_paths_directive(escape_space(library_paths))
-        + common.add_item_to_list(libraries, "-l")
+        + add_item_to_list(libraries, "-l")
     )
     executor.command(cmd, destination, context_directory)
 
@@ -118,32 +122,32 @@ def make_dependencyfilename(name):
 
 def expanded_library_name(name, directory=None):
 
-    common.verify_type(name)
+    verify_type(name)
 
     directory_part, file = os.path.split(name)
 
-    assembled = common.assemble_path(directory_part, file, directory, "lib", ".so")
+    assembled = assemble_path(directory_part, file, directory, "lib", ".so")
 
     return os.path.abspath(assembled)
 
 
 def expanded_archive_name(name, directory=None):
 
-    common.verify_type(name)
+    verify_type(name)
 
     directory_part, file = os.path.split(name)
 
-    assembled = common.assemble_path(directory_part, file, directory, "lib", ".a")
+    assembled = assemble_path(directory_part, file, directory, "lib", ".a")
 
     return os.path.abspath(assembled)
 
 
 def expanded_executable_name(name, directory=None):
 
-    common.verify_type(name)
+    verify_type(name)
 
     directory_part, file = os.path.split(name)
 
-    assembled = common.assemble_path(directory_part, file, directory)
+    assembled = assemble_path(directory_part, file, directory)
 
     return os.path.abspath(assembled)

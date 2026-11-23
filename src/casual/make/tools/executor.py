@@ -3,7 +3,7 @@ import os
 import subprocess
 from contextlib import contextmanager
 
-from casual.make.entity import state
+from casual.make.entity import settings
 from casual.make.tools import output
 
 
@@ -58,8 +58,8 @@ def execute_raw(command):
 def execute(command, show_command=True, show_output=True, env=None):
 
     try:
-        if show_command and not state.settings.quiet():
-            if state.settings.raw_format():
+        if show_command and not settings.get_settings().quiet():
+            if settings.get_settings().raw_format():
                 output.print(" ".join(str(v) for v in command), format=False)
             else:
                 output.print(" ".join(str(v) for v in command), end="")
@@ -72,7 +72,7 @@ def execute(command, show_command=True, show_output=True, env=None):
             # append to global env
             env = dict(os.environ, **env)
 
-        if not state.settings.dry_run():
+        if not settings.get_settings().dry_run():
             subprocess.run(command, stdout=out, stderr=err, check=True, env=env)
 
     except KeyboardInterrupt:
@@ -80,7 +80,7 @@ def execute(command, show_command=True, show_output=True, env=None):
         raise SystemError("\naborted due to ctrl-c\n")
 
     except subprocess.CalledProcessError as ex:
-        if state.settings.verbose():
+        if settings.get_settings().verbose():
             output.error("processed command: " + " ".join(str(v) for v in command))
         if ex.stderr:
             output.error(ex.stderr.decode(), header=True)

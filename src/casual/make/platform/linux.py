@@ -1,6 +1,5 @@
 import os
 
-from casual.make.entity import state
 from casual.make.platform import common, selector
 from casual.make.platform.common import configuration
 from casual.make.tools import environment, executor
@@ -12,12 +11,6 @@ from casual.make.tools import environment, executor
 ######################################################################
 
 build_configuration = selector.build_configuration()
-
-#
-# VALGRIND
-#
-if state.settings.use_valgrind():
-    PRE_UNITTEST_DIRECTIVE = ["valgrind", "--xml=yes", "--xml-file=valgrind.xml"]
 
 #
 # Format the include-/library- paths

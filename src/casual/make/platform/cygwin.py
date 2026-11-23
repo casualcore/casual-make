@@ -15,7 +15,7 @@
 
 # def compose_paths(*args):
 #     paths = ''
-#     root_path = state.settings.source_root()
+#     root_path = state.get_settings().source_root()
 #     for arg in args:
 #         path = os.path.join(root_path, arg)
 #         paths += executor.execute_raw(['cygpath', path]).decode() + ':'

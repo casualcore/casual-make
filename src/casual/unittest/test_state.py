@@ -2,45 +2,45 @@ import os
 import pprint
 import unittest
 
-from casual.make.entity import cli, state
+from casual.make.entity import cli, settings
 
 
 class TestState(unittest.TestCase):
 
     def test_dry_run(self):
-        state.settings.setup()
+        settings.get_settings().setup()
         arguments = cli.handle_arguments(["--dry-run"])
-        state.environment(arguments)
-        self.assertEqual(state.settings.dry_run(), True)
-        self.assertEqual(state.settings.raw_format(), False)
+        settings.environment(arguments)
+        self.assertEqual(settings.get_settings().dry_run(), True)
+        self.assertEqual(settings.get_settings().raw_format(), False)
 
     def test_raw_format(self):
-        state.settings.setup()
+        settings.get_settings().setup()
         arguments = cli.handle_arguments(["--raw"])
-        state.environment(arguments)
-        self.assertEqual(state.settings.dry_run(), False)
-        self.assertEqual(state.settings.raw_format(), True)
+        settings.environment(arguments)
+        self.assertEqual(settings.get_settings().dry_run(), False)
+        self.assertEqual(settings.get_settings().raw_format(), True)
 
     def test_source_root_git_value(self):
-        state.settings.setup()
+        settings.get_settings().setup()
         if "CASUAL_MAKE_SOURCE_ROOT" in os.environ:
             del os.environ["CASUAL_MAKE_SOURCE_ROOT"]
 
         arguments = cli.handle_arguments()
-        state.environment(arguments)
+        settings.environment(arguments)
         env_source_root = os.path.normpath(os.getenv("CASUAL_MAKE_HOME") + "/..")
-        self.assertEqual(state.settings.source_root(), env_source_root)
-        self.assertEqual(state.settings.raw_format(), False)
+        self.assertEqual(settings.get_settings().source_root(), env_source_root)
+        self.assertEqual(settings.get_settings().raw_format(), False)
 
     def test_source_root_use_variable(self):
-        state.settings.setup()
+        settings.get_settings().setup()
         arguments = cli.handle_arguments()
         answer = "testvalue"
         os.environ["CASUAL_MAKE_SOURCE_ROOT"] = answer
-        state.environment(arguments)
+        settings.environment(arguments)
 
-        self.assertEqual(state.settings.source_root(), answer)
-        self.assertEqual(state.settings.raw_format(), False)
+        self.assertEqual(settings.get_settings().source_root(), answer)
+        self.assertEqual(settings.get_settings().raw_format(), False)
 
 
 if __name__ == "__main__":

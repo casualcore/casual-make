@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 
-from casual.make.entity import cli, state
-from casual.make.platform import selector
 import importlib.metadata
+
+from casual.make.entity import cli, settings
+from casual.make.platform import selector
+
 
 def get_installed_version() -> str:
     try:
@@ -20,10 +22,9 @@ def main():
         print( f"casual-make: {get_installed_version()}")
         raise SystemExit(0)
 
-    state.environment(args)
+    settings.create_settings(args)
 
     selected = args.target
-
     try:
 
         # Need to import this after argparse
